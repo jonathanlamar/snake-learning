@@ -25,31 +25,35 @@ class GameState:
         self.board[self.prize_loc[0], self.prize_loc[1]] = -1
 
     def update(self, new_direction):
-        # State update (only if valid)
+        # Direction update (only if valid, i.e., no reversing direction)
         if not all(new_direction == -1*(self.direction)):
             self.direction = new_direction
         self.head_loc += self.direction
 
-        # Self-collision detection
-        if self.board[self.head_loc[0], self.head_loc[1]] > 0:
-            self.dead=True
-
         # Wall detection
         if any(self.head_loc >= 20) or any(self.head_loc < 0):
             self.dead = True
+            return
+
+        # Self-collision detection
+        if self.board[self.head_loc[0], self.head_loc[1]] > 0:
+            self.dead = True
+            return
 
         # Prize handling
         if all(self.head_loc == self.prize_loc):
             self.score += 1
-            self.prize_loc = np.random.randint(0, self.board_size, 2)
+            X, Y = np.where(self.board == 0)
+            i = np.random.choice(range(len(X)))
+            self.prize_loc = np.array([X[i], Y[i]])
 
-        # Increment all nonzero cells
+        # Increment all nonzero cells (will also erase prize)
         self.board += (self.board != 0).astype(int)
         # Add new head cell
         self.board[self.head_loc[0], self.head_loc[1]] = 1
         # Delete tail cell
         self.board[self.board > self.score+10] = 0
-        # Place prize cell
+        # Add prize cell
         self.board[self.prize_loc[0], self.prize_loc[1]] = -1
 
     def draw(self):

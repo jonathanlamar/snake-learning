@@ -22,11 +22,11 @@ def main_loop(game):
 
     while game.dead == False:
 
-        # Draw to screen
-        game.draw()
-
         # Update game state
         game.update(DIRECTION)
+
+        # Draw to screen
+        game.draw()
 
         # Control the speed of the game here
         sleep(0.15)
