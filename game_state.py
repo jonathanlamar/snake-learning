@@ -1,4 +1,5 @@
 import os
+import pickle
 import numpy as np
 
 class GameState:
@@ -55,6 +56,12 @@ class GameState:
         self.board[self.board > self.score+10] = 0
         # Add prize cell
         self.board[self.prize_loc[0], self.prize_loc[1]] = -1
+
+    def output_state(self, time):
+        visible_state = self.board.copy()
+        # The positive values are incremented, so we  need to reset them to 1.
+        visible_state[visible_state > 0] = 1
+        # TODO: Implement this.
 
     def draw(self):
         os.system('clear')
