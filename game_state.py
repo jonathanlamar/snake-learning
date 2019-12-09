@@ -8,8 +8,9 @@ class GameState:
         self.board_size = board_size
         self.prize_loc = np.random.randint(0, self.board_size, 2)
         self.head_loc  = np.array([board_size // 2, board_size // 2])
-        self.direction = np.array([0, 0])
+        self.direction = np.array([0, 0]) # Represents the ordered pair (dx/dt, dy/dt)
         self.score     = 0
+        self.time      = 0 # Keep track of how long the game has lasted
         self.dead      = False
 
         # The board will be drawn from this array. Positive values
@@ -24,11 +25,13 @@ class GameState:
         self.board[self.head_loc[0], self.head_loc[1]] = 1
         self.board[self.prize_loc[0], self.prize_loc[1]] = -1
 
+
     def update(self, new_direction):
         # Direction update (only if valid, i.e., no reversing direction)
         if not all(new_direction == -1*(self.direction)):
             self.direction = new_direction
         self.head_loc += self.direction
+        self.time += 1
 
         # Wall detection
         if any(self.head_loc >= 20) or any(self.head_loc < 0):
@@ -55,6 +58,7 @@ class GameState:
         self.board[self.board > self.score+10] = 0
         # Add prize cell
         self.board[self.prize_loc[0], self.prize_loc[1]] = -1
+
 
     def draw(self):
         os.system('clear')

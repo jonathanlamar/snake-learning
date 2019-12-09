@@ -1,0 +1,4 @@
+numpy==1.17.4
+pynput==1.5.2
+python-xlib==0.26
+six==1.13.0
