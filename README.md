@@ -7,4 +7,4 @@ day!), this game turned out really well!
 
 ## How to play
 
-Run `./play_snake.py`.  Use your arrow keys to drive the snake.
+Run `./game/play_snake.py`.  Use your arrow keys to drive the snake.

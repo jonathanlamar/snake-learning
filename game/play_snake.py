@@ -3,7 +3,7 @@
 import numpy as np
 from time import sleep
 from pynput.keyboard import Key, Listener
-from game.game_state import GameState
+from game_state import GameState
 
 def on_press(key):
     global DIRECTION
