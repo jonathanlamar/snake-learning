@@ -10,6 +10,10 @@ from init_config import InitConfig
 # with methods for initializing, mutating, and breeding
 class Player(InitConfig):
     def __init__(self, weights=None):
+
+        # Grab global config variables
+        super().__init__()
+
         # TODO: Try different activation functions.
         self.model = Sequential([
             Dense(24, input_shape=(24,)),
