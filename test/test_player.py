@@ -1,6 +1,8 @@
 import numpy as np
-from player import Player
-from init_config import InitConfig
+
+# My stuff
+from ai.player import Player
+from ai.init_config import InitConfig
 
 def test_cross_singleton():
     arr1 = np.zeros((1, 1))

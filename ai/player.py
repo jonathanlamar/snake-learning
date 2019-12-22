@@ -4,7 +4,9 @@ import tensorflow.keras as ks
 from tensorflow.keras import Sequential
 from tensorflow.keras.layers import Dense
 from numpy.random import normal, randint
-from init_config import InitConfig
+
+# My stuff
+from ai.init_config import InitConfig
 
 class Player(InitConfig):
     """
