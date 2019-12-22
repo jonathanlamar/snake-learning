@@ -1,5 +1,5 @@
 # My stuff
-from ai.init_config import InitConfig
+from config.init_config import InitConfig
 from ai.player import Player
 
 class Generation(InitConfig):

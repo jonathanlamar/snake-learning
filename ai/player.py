@@ -6,7 +6,7 @@ from tensorflow.keras.layers import Dense
 from numpy.random import normal, randint
 
 # My stuff
-from ai.init_config import InitConfig
+from config.init_config import InitConfig
 
 class Player(InitConfig):
     """
@@ -24,7 +24,7 @@ class Player(InitConfig):
             Dense(24, input_shape=(24,)),
             Dense(18),
             Dense(18),
-            Dense(4),
+            Dense(4)
         ])
 
         # I have to specify a loss, even though I won't be "training" the model.
@@ -40,54 +40,12 @@ class Player(InitConfig):
     def parse_game_state(self, game_state):
         # TODO: In 8 different directions, we need to read distance to prize,
         # distance to wall, and distance to self.
-        left_parsed = self._parse_cardinal(game_state, 'left')
-        right_parsed = self._parse_cardinal(game_state, 'right')
-        up_parsed = self._parse_cardinal(game_state, 'up')
-        down_parsed = self._parse_cardinal(game_state, 'down')
+        left_parsed = game_state.scan_in_direction('left')
+        right_parsed = game_state.scan_in_direction('right')
+        up_parsed = game_state.scan_in_direction('up')
+        down_parsed = game_state.scan_in_direction('down')
 
-    def _parse_cardinal(self, game_state, direction):
-        # TODO: Write tests!!!
-        # Returns: triple of integers representing distance to edge, distance to
-        # closest prize (if any), and distance to body (if any)
-        r, c = game_state.head_loc
 
-        # TODO: Test these
-        if direction == 'left':
-            line_of_sight = game_state.board[r, c::-1]
-        elif direction == 'right':
-            line_of_sight = game_state.board[r, c:]
-        elif direction == 'up':
-            line_of_sight = game_state.board[r::-1, c]
-        elif direction == 'down':
-            line_of_sight = game_state.board[r:, c]
-        else:
-            raise RuntimeError('Invalid direction.')
-
-        edge_distance = self._detect(line_of_sight != line_of_sight)
-        prize_distance = self._detect(line_of_sight == -1)
-        body_distance = self._detect(line_of_sight > 0)
-
-        return edge_distance, prize_distance, body_distance
-
-    @staticmethod
-    def _reverse(arr):
-        return arr[::-1]
-
-    def _detect(self, line_of_sight):
-        # Expects: A numpy array of booleans
-        # Returns: Closest true from 0
-
-        # Null out chance of head detection (ugly!)
-        line_of_sight[0] = False
-
-        target_locs, = np.where(line_of_sight)
-        if len(target_locs) == 0:
-            # TODO: How to encode no target in sight?
-            target_distance = len(line_of_sight)
-        else:
-            target_distance = target_locs[0]
-
-        return target_distance
 
     def decide_direction(self, parsed_game_state):
         out_arr = self.model.predict(parsed_game_state)

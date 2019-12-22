@@ -27,3 +27,8 @@ class InitConfig:
 
         # How big should the game be?
         self.board_size = 20
+
+        # Seed for the random number generator.
+        # I don't think this has any effect on the random weights for the
+        # players, but does affect the placement of the apples.
+        self.seed = 2718
