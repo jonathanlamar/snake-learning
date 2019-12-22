@@ -40,36 +40,52 @@ class Player(InitConfig):
     def parse_game_state(self, game_state):
         # TODO: In 8 different directions, we need to read distance to prize,
         # distance to wall, and distance to self.
-        pass
+        left_parsed = self._parse_cardinal(game_state, 'left')
+        right_parsed = self._parse_cardinal(game_state, 'right')
+        up_parsed = self._parse_cardinal(game_state, 'up')
+        down_parsed = self._parse_cardinal(game_state, 'down')
 
-    def _parse_left(self, game_state):
-        # TODO: Generalize to parse_cardinal
+    def _parse_cardinal(self, game_state, direction):
         # TODO: Write tests!!!
         # Returns: triple of integers representing distance to edge, distance to
         # closest prize (if any), and distance to body (if any)
         r, c = game_state.head_loc
 
-        # Get the cells to the left of the head
-        line_of_sight = state.board[r, :c]
+        # TODO: Test these
+        if direction == 'left':
+            line_of_sight = game_state.board[r, c::-1]
+        elif direction == 'right':
+            line_of_sight = game_state.board[r, c:]
+        elif direction == 'up':
+            line_of_sight = game_state.board[r::-1, c]
+        elif direction == 'down':
+            line_of_sight = game_state.board[r:, c]
+        else:
+            raise RuntimeError('Invalid direction.')
 
-        edge_distance = c
-        prize_distance = self._detect(line_of_sight == -1, reverse=True)
-        body_distance = self._detect(line_of_sight > 0, reverse=True)
+        edge_distance = self._detect(line_of_sight != line_of_sight)
+        prize_distance = self._detect(line_of_sight == -1)
+        body_distance = self._detect(line_of_sight > 0)
 
         return edge_distance, prize_distance, body_distance
 
-    def _detect(line_of_sight, reverse=False):
+    @staticmethod
+    def _reverse(arr):
+        return arr[::-1]
+
+    def _detect(self, line_of_sight):
         # Expects: A numpy array of booleans
-        # Returns: Closest true from 0 (if reverse=False), or from -1
-        # (if reverse=True)
-        # FIXME: This is pretty ugly.
+        # Returns: Closest true from 0
+
+        # Null out chance of head detection (ugly!)
+        line_of_sight[0] = False
+
         target_locs, = np.where(line_of_sight)
         if len(target_locs) == 0:
             # TODO: How to encode no target in sight?
-            target_distance = c
+            target_distance = len(line_of_sight)
         else:
-            closest_target = target_locs[-1]
-            target_distance = c - closest_target
+            target_distance = target_locs[0]
 
         return target_distance
 

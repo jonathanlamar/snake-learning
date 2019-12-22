@@ -24,3 +24,6 @@ class InitConfig:
         # function, respectively.
         self.score_weight = 100
         self.duration_weight = 1
+
+        # How big should the game be?
+        self.board_size = 20
