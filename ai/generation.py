@@ -23,6 +23,7 @@ class Generation(InitConfig):
         else:
             self.players = [Player() for i in range(self.generation_size)]
 
+
         def get_breeders(self):
             pass
 

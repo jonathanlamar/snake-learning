@@ -3,6 +3,11 @@ import pickle
 import numpy as np
 
 class GameState:
+    """
+    This class is responsible for holding the state of the game at any given
+    time.  Its main method is `update` which advances the game by one frame and
+    updates the direction of the snake.  It also has a drawing method for fun.
+    """
     def __init__(self, seed=None, board_size=20):
         np.random.seed(seed)
 

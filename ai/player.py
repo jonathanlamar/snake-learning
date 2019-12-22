@@ -42,6 +42,37 @@ class Player(InitConfig):
         # distance to wall, and distance to self.
         pass
 
+    def _parse_left(self, game_state):
+        # TODO: Generalize to parse_cardinal
+        # TODO: Write tests!!!
+        # Returns: triple of integers representing distance to edge, distance to
+        # closest prize (if any), and distance to body (if any)
+        r, c = game_state.head_loc
+
+        # Get the cells to the left of the head
+        line_of_sight = state.board[r, :c]
+
+        edge_distance = c
+        prize_distance = self._detect(line_of_sight == -1, reverse=True)
+        body_distance = self._detect(line_of_sight > 0, reverse=True)
+
+        return edge_distance, prize_distance, body_distance
+
+    def _detect(line_of_sight, reverse=False):
+        # Expects: A numpy array of booleans
+        # Returns: Closest true from 0 (if reverse=False), or from -1
+        # (if reverse=True)
+        # FIXME: This is pretty ugly.
+        target_locs, = np.where(line_of_sight)
+        if len(target_locs) == 0:
+            # TODO: How to encode no target in sight?
+            target_distance = c
+        else:
+            closest_target = target_locs[-1]
+            target_distance = c - closest_target
+
+        return target_distance
+
     def decide_direction(self, parsed_game_state):
         out_arr = self.model.predict(parsed_game_state)
         direction = out_arr.argmax()
