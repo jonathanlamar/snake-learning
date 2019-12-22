@@ -6,9 +6,12 @@ from tensorflow.keras.layers import Dense
 from numpy.random import normal, randint
 from init_config import InitConfig
 
-# This class mainly holds a keras model (for now, fixed geometry),
-# with methods for initializing, mutating, and breeding
 class Player(InitConfig):
+    """
+    This class mainly holds a keras model (for now, fixed geometry),
+    with methods for reading a game state and deciding how to move, as well as
+    methods for breeding with another Player instance.
+    """
     def __init__(self, weights=None):
 
         # Grab global config variables
@@ -28,6 +31,36 @@ class Player(InitConfig):
         if weights is not None:
             self.model.set_weights(weights)
 
+
+    ###########################################################################
+    #           Methods for interacting with a GameState instance
+    ###########################################################################
+    def parse_game_state(self, game_state):
+        # TODO: In 8 different directions, we need to read distance to prize,
+        # distance to wall, and distance to self.
+        pass
+
+    def decide_direction(self, parsed_game_state):
+        out_arr = self.model.predict(parsed_game_state)
+        direction = out_arr.argmax()
+
+        if direction == 0:
+            # Return an ordered pair representing dy, dx in array ordering
+            # (i.e., -1,0 means Up)
+            return np.array([-1, 0])
+        elif direction == 1:
+            # Down
+            return np.array([1, 0])
+        elif direction == 2:
+            # Left
+            return np.array([0, -1])
+        elif direction == 3:
+            # Right
+            return np.array([1, 1])
+
+    ###########################################################################
+    #               Methods for making new Player instances
+    ###########################################################################
     def breed(self, other):
         # Combine with other and return new SnakeModel
         # Weights come as a list of arrays, one for each layer

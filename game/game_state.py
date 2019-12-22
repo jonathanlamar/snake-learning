@@ -9,7 +9,7 @@ class GameState:
         self.board_size = board_size
         self.prize_loc = np.random.randint(0, self.board_size, 2)
         self.head_loc  = np.array([board_size // 2, board_size // 2])
-        self.direction = np.array([0, 0]) # Represents the ordered pair (dx/dt, dy/dt)
+        self.direction = np.array([0, 0]) # Represents the ordered pair (dy/dt, dx/dt)
         self.score     = 0
         self.time      = 0 # Keep track of how long the game has lasted
         self.dead      = False
