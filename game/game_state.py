@@ -50,7 +50,7 @@ class GameState(InitConfig):
         nextR, nextC = next_loc
 
         # Wall detection
-        if nextC < 0 or nextC >= 20 or nextR < 0 or nextR >= 20:
+        if nextC < 0 or nextC >= self.board_size or nextR < 0 or nextR >= self.board_size:
             self.dead = True
             return
 

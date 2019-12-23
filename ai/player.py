@@ -1,10 +1,11 @@
-import numpy as np
 from itertools import product
-import tensorflow as tf
-import tensorflow.keras as ks
+from numpy.random import normal, randint
 from tensorflow.keras import Sequential
 from tensorflow.keras.layers import Dense
-from numpy.random import normal, randint
+from time import sleep
+import numpy as np
+import tensorflow as tf
+import tensorflow.keras as ks
 
 # My stuff
 from config.init_config import InitConfig
@@ -59,7 +60,7 @@ class Player(InitConfig):
             # Distance to body
             distances.append(self._detect(LOS > 0))
 
-        return np.array(distances)
+        return np.array(distances).reshape(1, 24)
 
     def _detect(self, line_of_sight):
         # Expects: A numpy array of booleans
@@ -67,7 +68,9 @@ class Player(InitConfig):
 
         target_locs, = np.where(line_of_sight)
         if len(target_locs) == 0:
-            target_index = len(line_of_sight)
+            # If not found, then report index of the "horizon", which is
+            # always board_size away, no matter where the head is located.
+            target_index = self.board_size - 1
         else:
             target_index = target_locs[0]
 
@@ -96,7 +99,9 @@ class Player(InitConfig):
             return np.array([0, -1])
         elif direction == 3:
             # Right
-            return np.array([1, 1])
+            return np.array([0, 1])
+        else:
+            raise RuntimeError('Some weird argmax.')
 
     def play_game(self, game_state):
         # Play game until dead
@@ -104,15 +109,28 @@ class Player(InitConfig):
         # Returns: final score and time played.
 
         # TODO: In the future, save game boards as dataset for training other models?
+        time_limit = self.max_time_no_score
+        previous_score = 0
         while not game_state.dead:
             model_input = self.parse_game_state(game_state)
             new_direction = self.decide_direction(model_input)
 
             game_state.update(new_direction)
 
-            # TODO: Handle early stopping.
+            game_state.draw()
+            # sleep(0.15)
+
+            if game_state.score > previous_score:
+                time_limit = min(self.max_time_allowed,
+                                 time_limit + self.extra_time_per_score)
+                previous_score = game_state.score
+
+            if game_state.time > time_limit:
+                print("Time exceeded.")
+                break
 
         return game_state.score, game_state.time
+
 
     ###########################################################################
     #               Methods for making new Player instances

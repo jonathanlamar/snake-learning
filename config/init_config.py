@@ -26,7 +26,7 @@ class InitConfig:
         self.duration_weight = 1
 
         # How big should the game be?
-        self.board_size = 20
+        self.board_size = 50
 
         # Seed for the random number generator.
         # I don't think this has any effect on the random weights for the
