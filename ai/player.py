@@ -43,7 +43,9 @@ class Player(InitConfig):
         # and body.  Return distance to each in all 8 directions (as an array
         # of length 24)
         distances = []
-        for dy, dx in product(range(-1, 2), range(-1, 2)):
+        for dy, dx in product([-1, 0, 1], [-1, 0, 1]):
+            if dy == 0 and dx == 0:
+                continue
 
             # Line of sight: an array of game booaord values starting from the
             # head, and going in this direction all the way to the nearest wall.
@@ -117,8 +119,8 @@ class Player(InitConfig):
         if tensor2.shape[0] != nrows or tensor2.shape[1] != ncols:
             raise RuntimeError('Incompatible matrix shapes for crossover.')
 
-        randR = randint(0, nrows)
-        randC = randint(0, ncols)
+        randR = randint(nrows)
+        randC = randint(ncols)
 
         for i in range(nrows):
             for j in range(ncols):

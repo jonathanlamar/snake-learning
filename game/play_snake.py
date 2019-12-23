@@ -33,6 +33,6 @@ def main_loop(game):
 
 if __name__ == '__main__':
     with Listener(on_press=on_press) as listener:
-        game = GameState(seed=None)
+        game = GameState()
         main_loop(game)
     print('You lose!')

@@ -9,7 +9,9 @@ class GameState(InitConfig):
     """
     This class is responsible for holding the state of the game at any given
     time.  Its main method is `update` which advances the game by one frame and
-    updates the direction of the snake.  It also has a drawing method for fun.
+    updates the direction of the snake.  It also has a drawing method for fun,
+    and a method for getting line of sight from the head of the snake to a wall
+    in any of 8 directions.
     """
     def __init__(self):
 
@@ -120,7 +122,16 @@ class GameState(InitConfig):
         r, c = self.head_loc
 
         # Start from 1 to leave out snake head
-        rs = [r + i*dy for i in range(1, self.board_size) if r+i*dy in range(self.board_size)]
-        cs = [c + i*dx for i in range(1, self.board_size) if c+i*dx in range(self.board_size)]
+        if dy == 0:
+            rs = [r]
+        else:
+            rs = [r + i*dy for i in range(1, self.board_size) if
+                  r+i*dy in range(self.board_size) and c+i*dx in range(self.board_size)]
+
+        if dx == 0:
+            cs = [c]
+        else:
+            cs = [c + i*dx for i in range(1, self.board_size) if
+                  r+i*dy in range(self.board_size) and c+i*dx in range(self.board_size)]
 
         return self.board[rs, cs]

@@ -14,26 +14,45 @@ def test_cross_singleton():
     assert cross == arr1 or cross == arr2
 
 def test_rowsums():
-    arr1 = np.zeros((20, 20))
-    arr2 = np.ones((20, 20))
-
     player = Player()
-    cross = player._cross_arrays(arr1, arr2)
+    bs = player.board_size
 
-    rowsums = cross.sum(axis=1)
+    arr1 = np.zeros((bs, bs))
+    arr2 = np.ones((bs, bs))
 
-    assert len(set(rowsums)) == 3
+    for _ in range(100):
+        cross = player._cross_arrays(arr1, arr2)
+
+        rowsums = cross.sum(axis=1)
+        # rowsum( 0 0 0
+        #         0 1 1
+        #         1 1 1) == 3
+        # rowsum( 0 0 0
+        #         1 1 1
+        #         1 1 1) == 2
+        # rowsum( 1 1 1
+        #         1 1 1
+        #         1 1 1) == 1
+        assert len(set(rowsums)) in [1, 2, 3]
 
 def test_colsums():
-    arr1 = np.zeros((20, 20))
-    arr2 = np.ones((20, 20))
-
     player = Player()
-    cross = player._cross_arrays(arr1, arr2)
+    bs = player.board_size
 
-    colsums = cross.sum(axis=0)
+    arr1 = np.zeros((bs, bs))
+    arr2 = np.ones((bs, bs))
 
-    assert len(set(colsums)) == 2
+    for _ in range(100):
+        cross = player._cross_arrays(arr1, arr2)
+
+        colsums = cross.sum(axis=0)
+        # colsum( 0 0 0
+        #         0 1 1
+        #         1 1 1) == 2
+        # colsum( 0 0 0
+        #         1 1 1
+        #         1 1 1) == 1
+        assert len(set(colsums)) in [1, 2]
 
 def test_fuzz_mean():
     arr = np.zeros(2000000)
