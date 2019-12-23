@@ -19,7 +19,7 @@ class GameState(InitConfig):
         np.random.seed(self.seed)
 
         self.prize_loc = np.random.randint(0, self.board_size, 2)
-        self.head_loc  = np.array([board_size // 2, board_size // 2])
+        self.head_loc  = np.array([self.board_size // 2, self.board_size // 2])
         self.direction = np.array([0, 0]) # Represents the ordered pair (dy/dt, dx/dt)
         self.score     = 0
         self.time      = 0 # Keep track of how long the game has lasted
@@ -113,66 +113,14 @@ class GameState(InitConfig):
     # Methods for providing information to the player (maybe should be methods
     # of Player class.)
     ###########################################################################
-    def scan_in_direction(self, direction):
-        # TODO: Write tests!!!
-        # Returns: triple of integers representing distance to edge, distance to
-        # closest prize (if any), and distance to body (if any)
+    def get_line_of_sight(self, dy, dx):
+        # Expects: direction written as a pair dy, dx
+        # Returns: Ray starting one from head_loc extending in that direction
+        # to the nearest wall.  The values in the ray are from the game board.
         r, c = self.head_loc
 
-        def _reverse(arr):
-            return arr[::-1]
+        # Start from 1 to leave out snake head
+        rs = [r + i*dy for i in range(1, self.board_size) if r+i*dy in range(self.board_size)]
+        cs = [c + i*dx for i in range(1, self.board_size) if c+i*dx in range(self.board_size)]
 
-        # TODO: Test these
-        if direction == 'west':
-            line_of_sight = _reverse(self.board[r, :c-1])
-        elif direction == 'east':
-            line_of_sight = self.board[r, c+1:]
-        elif direction == 'north':
-            line_of_sight = _reverse(self.board[:r-1, c])
-        elif direction == 'south':
-            line_of_sight = self.board[r+1:, c]
-        elif direction == 'northwest':
-            limit = min(r + 1, c + 1)
-            rs = [r - i for i in range(1, limit)]
-            cs = [c - i for i in range(1, limit)]
-            line_of_sight = self.board[rs, cs]
-        elif direction == 'northeast':
-            limit = min(r + 1, self.board_size - c)
-            rs = [r - i for i in range(1, limit)]
-            cs = [c + i for i in range(1, limit)]
-            line_of_sight = self.board[rs, cs]
-        elif direction == 'southeast':
-            limit = min(self.board_size - r, self.board_size - c)
-            rs = [r + i for i in range(1, limit)]
-            cs = [c + i for i in range(1, limit)]
-            line_of_sight = self.board[rs, cs]
-        elif direction == 'southwest':
-            limit = min(self.board_size - r, c + 1)
-            rs = [r + i for i in range(1, limit)]
-            cs = [c - i for i in range(1, limit)]
-            line_of_sight = self.board[rs, cs]
-        else:
-            raise RuntimeError('Invalid direction.')
-
-        edge_distance = self._detect(line_of_sight != line_of_sight)
-        prize_distance = self._detect(line_of_sight == -1)
-        body_distance = self._detect(line_of_sight > 0)
-
-        return edge_distance, prize_distance, body_distance
-
-    def _detect(self, line_of_sight):
-        # Expects: A numpy array of booleans
-        # Returns: Closest true from 0
-
-        # Null out chance of head detection (ugly!)
-        line_of_sight[0] = False
-
-        target_locs, = np.where(line_of_sight)
-        if len(target_locs) == 0:
-            # TODO: How to encode no target in sight?
-            target_distance = len(line_of_sight)
-        else:
-            target_distance = target_locs[0]
-
-        return target_distance
-
+        return self.board[rs, cs]

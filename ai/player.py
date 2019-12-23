@@ -1,4 +1,5 @@
 import numpy as np
+from itertools import product
 import tensorflow as tf
 import tensorflow.keras as ks
 from tensorflow.keras import Sequential
@@ -38,13 +39,38 @@ class Player(InitConfig):
     #           Methods for interacting with a GameState instance
     ###########################################################################
     def parse_game_state(self, game_state):
-        # TODO: In 8 different directions, we need to read distance to prize,
-        # distance to wall, and distance to self.
-        left_parsed = game_state.scan_in_direction('left')
-        right_parsed = game_state.scan_in_direction('right')
-        up_parsed = game_state.scan_in_direction('up')
-        down_parsed = game_state.scan_in_direction('down')
+        # Look in 8 directions (N, NE, E, SE, S, SW, W, NW) for wall, prize,
+        # and body.  Return distance to each in all 8 directions (as an array
+        # of length 24)
+        distances = []
+        for dy, dx in product(range(-1, 2), range(-1, 2)):
 
+            # Line of sight: an array of game booaord values starting from the
+            # head, and going in this direction all the way to the nearest wall.
+            LOS = game_state.get_line_of_sight(dy, dx)
+
+            # Distance to wall represented by 1+len(LOS)
+            distances.append(len(LOS) + 1)
+            # Distance to prize
+            distances.append(self._detect(LOS == -1))
+            # Distance to body
+            distances.append(self._detect(LOS > 0))
+
+        return np.array(distances)
+
+    def _detect(self, line_of_sight):
+        # Expects: A numpy array of booleans
+        # Returns: index of first True from 0.  Length of array if none exist.
+
+        target_locs, = np.where(line_of_sight)
+        if len(target_locs) == 0:
+            target_index = len(line_of_sight)
+        else:
+            target_index = target_locs[0]
+
+        # Add 1 because LOS excludes snake head
+        target_distance = target_index + 1
+        return target_distance
 
 
     def decide_direction(self, parsed_game_state):
