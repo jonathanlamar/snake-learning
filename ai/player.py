@@ -103,10 +103,10 @@ class Player(InitConfig):
         else:
             raise RuntimeError('Some weird argmax.')
 
-    def play_game(self, game_state):
+    def play_game(self, game_state, draw_game=False):
         # Play game until dead
         # Expects: GameState instance.
-        # Returns: final score and time played.
+        # Returns: GameState
 
         # TODO: In the future, save game boards as dataset for training other models?
         time_limit = self.max_time_no_score
@@ -117,8 +117,8 @@ class Player(InitConfig):
 
             game_state.update(new_direction)
 
-            game_state.draw()
-            # sleep(0.15)
+            if draw_game:
+                game_state.draw()
 
             if game_state.score > previous_score:
                 time_limit = min(self.max_time_allowed,
@@ -129,7 +129,7 @@ class Player(InitConfig):
                 print("Time exceeded.")
                 break
 
-        return game_state.score, game_state.time
+        return game_state
 
 
     ###########################################################################
@@ -152,23 +152,18 @@ class Player(InitConfig):
     def _cross_arrays(self, tensor1, tensor2):
         # Starting completely random for now.  The other person took a rectangle
         # from one side and the rest from the other.
-        crossed_tensor = np.zeros(shape=tensor1.shape)
 
-        nrows, ncols = tensor1.shape
-        if tensor2.shape[0] != nrows or tensor2.shape[1] != ncols:
+        if tensor1.shape != tensor2.shape:
             raise RuntimeError('Incompatible matrix shapes for crossover.')
 
-        randR = randint(nrows)
-        randC = randint(ncols)
+        num_entries = len(tensor1.flatten())
+        split_point = randint(num_entries)
 
-        for i in range(nrows):
-            for j in range(ncols):
-                if i < randR or (i == randR and j <= randC):
-                    crossed_tensor[i, j] = tensor1[i, j]
-                else:
-                    crossed_tensor[i, j] = tensor2[i, j]
+        crossed_tensor = np.zeros(num_entries)
+        crossed_tensor[:split_point] = tensor1.flatten()[:split_point]
+        crossed_tensor[split_point:] = tensor2.flatten()[split_point:]
 
-        return crossed_tensor
+        return crossed_tensor.reshape(tensor1.shape)
 
     def _mutate_array(self, arr):
         # Mutate weights by adding gaussian noise

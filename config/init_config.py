@@ -4,11 +4,10 @@ class InitConfig:
     I'm doing this instead of a run script with global variables.
     """
     def __init__(self):
-        print("Initializing config")
 
         # Related to generations and breeding
-        self.generation_size = 2000
-        self.number_to_breed = 100
+        self.generation_size = 200
+        self.number_to_breed = 10
         # Variance of Gaussian noise added during breeding algorithm
         self.mutation_rate = 1
 
