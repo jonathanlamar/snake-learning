@@ -11,7 +11,7 @@ class Generation(InitConfig):
     generation of player instances, as well as spawning its successor
     generation.
     """
-    def __init__(self, breeders=None):
+    def __init__(self, breeders=None, gen_number=0):
 
         # Grab global config variables
         super().__init__()
@@ -25,6 +25,8 @@ class Generation(InitConfig):
         else:
             # TODO: This is slow.
             self.players = np.array([Player() for _ in range(self.generation_size)])
+
+        self.gen_number = gen_number
 
 
     def breed(self, breeders):
@@ -53,7 +55,18 @@ class Generation(InitConfig):
 
         self.scores = np.array(scores)
 
-    def spawn(self):
+    def advance_next_gen(self):
         # Returns: New Generation instance bred from current.
         breeders = self.get_breeders()
         return Generation(breeders)
+
+    def save_players(self, save_dir='data'):
+        for i, P in enumerate(self.players):
+            P.save_model_weights(save_dir + '/gen' + self.gen_number + '/_player' + i + '.h5')
+
+    def load_players(self, save_dir='data', use_gen=True):
+        for i, P in enumerate(self.players):
+            if use_gen:
+                P.load_model_weights(save_dir + '/gen' + self.gen_number + '/_player' + i + '.h5')
+            else:
+                P.load_model_weights(save_dir + '/_player' + i + '.h5')
