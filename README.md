@@ -1,9 +1,8 @@
 # snake-learning
 
-A snake game for reinforcement learning.  I wanted to train a reinforcement
-learning model, and while I was brainstorming data collection, I threw this game
-together really quick.  While I never got around to training the model (some
-day!), this game turned out really well!
+I wanted to learn about genetic algorithms learning model, and while I was
+brainstorming data collection, I threw this game together really quick.  The
+neural network is a work in progress.
 
 ## Overview
 
