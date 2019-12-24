@@ -111,7 +111,7 @@ class Player(InitConfig):
         # TODO: In the future, save game boards as dataset for training other models?
         time_limit = self.max_time_no_score
         previous_score = 0
-        while not game_state.dead:
+        while (not game_state.dead) and (game_state.time < time_limit):
             model_input = self.parse_game_state(game_state)
             new_direction = self.decide_direction(model_input)
 
@@ -124,10 +124,6 @@ class Player(InitConfig):
                 time_limit = min(self.max_time_allowed,
                                  time_limit + self.extra_time_per_score)
                 previous_score = game_state.score
-
-            if game_state.time > time_limit:
-                print("Time exceeded.")
-                break
 
         return game_state
 

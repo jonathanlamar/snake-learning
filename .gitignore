@@ -5,3 +5,4 @@ tags
 venv/
 .vim/
 *.h5
+.DS_Store

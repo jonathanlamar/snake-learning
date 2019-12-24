@@ -6,7 +6,7 @@ class InitConfig:
     def __init__(self):
 
         # Related to generations and breeding
-        self.generation_size = 200
+        self.generation_size = 100
         self.number_to_breed = 10
         # Variance of Gaussian noise added during breeding algorithm
         self.mutation_rate = 1
@@ -25,9 +25,9 @@ class InitConfig:
         self.duration_weight = 1
 
         # How big should the game be?
-        self.board_size = 50
+        self.board_size = 25
 
         # Seed for the random number generator.
         # I don't think this has any effect on the random weights for the
         # players, but does affect the placement of the apples.
-        self.seed = 2718
+        self.seed = None
