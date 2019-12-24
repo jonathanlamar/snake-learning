@@ -18,8 +18,8 @@ day!), this game turned out really well!
 
 ### How to play for yourself
 
-To kick things off, I wrote a snake game to play.  Run `./game/play_snake.py`
-to try it out.  Use your arrow keys to drive the snake.
+To kick things off, I wrote a snake game to play.  Run `./play_snake.py` to try
+it out.  Use your arrow keys to drive the snake.
 
 ### Credit where it's due
 
