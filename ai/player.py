@@ -165,8 +165,8 @@ class Player(InitConfig):
         # Mutate weights by adding gaussian noise
         return arr + normal(scale = self.mutation_rate, size=arr.shape)
 
-    def save_model_weights(self, save_loc):
+    def save_weights(self, save_loc):
         self.model.save_weights(save_loc)
 
-    def load_model_weights(self, load_loc):
+    def load_weights(self, load_loc):
         self.model.load_weights(load_loc)

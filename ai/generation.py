@@ -19,7 +19,7 @@ class Generation(InitConfig):
         super().__init__()
 
         # Dataframe with summary statistics on performance.
-        self.summary = pd.DataFrame(index=range(self.generation_size))
+        self.summary = pd.DataFrame()
 
         # Either breed previous gen or start fresh
         self.players = self.breed(breeders)
@@ -32,11 +32,11 @@ class Generation(InitConfig):
         new_gen = []
         for i in range(self.generation_size):
             if breeders is not None:
-                print('Breeding player {}.'.format(i))
+                print('Breeding player %d.' % i)
                 P1, P2 = np.random.choice(breeders, 2, replace=False)
                 new_gen.append(P1.breed(P2))
             else:
-                print('Creating player {} from scratch.'.format(i))
+                print('Creating player %d from scratch.' % i)
                 new_gen.append(Player())
 
         return np.array(new_gen)
@@ -50,23 +50,27 @@ class Generation(InitConfig):
     def eval_players(self):
         # Have each player play the game and record performance
         # FIXME: This should be run in parallel
-        scores = []
-        durations = []
+        scores = np.zeros(self.generation_size)
+        durations = np.zeros(self.generation_size)
         for i, P in enumerate(self.players):
 
-            print('Evaluating player {}..'.format(i))
+            print('Evaluating player %d..' % i)
 
             # Ugh, state.  This alters G in place.
             G = GameState()
             P.play_game(G)
 
-            scores.append(G.score)
-            durations.append(G.time)
+            scores[i] = G.score
+            durations[i] = G.time
 
-        self.summary['score'] = scores
-        self.summary['duration'] = durations
-        self.summary['performance'] = (self.summary['score']*self.score_weight
-                                       + self.summary['duration']*self.duration_weight)
+        new_summary = pd.DataFrame({
+            'generation' : self.gen_number,
+            'score' : scores,
+            'duration' : durations,
+            'performance' : scores*self.score_weight
+                            + durations*self.duration_weight
+        })
+        self.summary = pd.concat([self.summary, new_summary])
 
     def advance_next_gen(self):
         # Updates self in place to form new generation.
@@ -76,38 +80,26 @@ class Generation(InitConfig):
 
         # Metadata
         self.gen_number += 1
-        self.summary = pd.DataFrame(index=range(self.generation_size))
 
         return self
 
-    def save(self, save_dir='data'):
-        if not os.path.exists(save_dir):
-            os.mkdir(save_dir)
-
-        gen_dir = save_dir + '/gen' + str(self.gen_number)
-
+    def save_latest_gen(self):
         for i, P in enumerate(self.players):
-            print('Saving player {0}...'.format(i))
+            print('Saving player %d...' % i)
 
-            if not os.path.exists(gen_dir):
-                os.mkdir(gen_dir)
+            if not os.path.exists('data/gen%04d' % self.gen_number):
+                os.mkdir('data/gen%04d' % self.gen_number)
 
-            P.save_model_weights(gen_dir + '/player' + str(i) + '.h5')
+            P.save_weights('data/gen%04d/player%04d.h5' % (self.gen_number, i))
 
         print('Saving summary.')
-        self.summary.to_csv(save_dir + '/gen{0}_summary.csv'
-                            .format(self.gen_number), index=False)
+        self.summary.to_csv('data/summary.csv', index=False)
 
-    def load(self, load_dir='data', use_gen=True):
-        gen_dir = load_dir + '/gen' + str(self.gen_number)
+    def load_latest_gen(self):
+        print('Loading summary.')
+        self.summary = pd.read_csv('data/summary.csv')
+        self.gen_number = self.summary['generation'].max()
 
         for i, P in enumerate(self.players):
-            print('Loading model {0}...'.format(i))
-            if use_gen:
-                P.load_model_weights(gen_dir + '/player' + str(i) + '.h5')
-            else:
-                P.load_model_weights(load_dir + '/player' + str(i) + '.h5')
-
-        print('Loading summary.')
-        self.summary = pd.read_csv(load_dir + '/gen{0}_summary.csv'
-                                   .format(self.gen_number))
+            print('Loading model %d...' % i)
+            P.load_weights('data/gen%04d/player%04d.h5' % (self.gen_number, i))

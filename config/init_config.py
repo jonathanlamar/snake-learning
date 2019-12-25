@@ -9,7 +9,7 @@ class InitConfig:
         self.generation_size = 20
         self.number_to_breed = 5
         # Variance of Gaussian noise added during breeding algorithm
-        self.mutation_rate = 1
+        self.mutation_rate = 0
 
         # Related to halting the game:
         # This many frames with no score = kill
