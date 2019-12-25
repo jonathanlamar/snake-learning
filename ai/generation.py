@@ -83,23 +83,29 @@ class Generation(InitConfig):
 
         return self
 
-    def save_latest_gen(self):
+    def save_latest_gen(self, test=False):
+        save_dir = 'test' if test else 'gen%04d' % self.gen_number
+
         for i, P in enumerate(self.players):
             print('Saving player %d...' % i)
 
-            if not os.path.exists('data/gen%04d' % self.gen_number):
-                os.mkdir('data/gen%04d' % self.gen_number)
+            if not os.path.exists('data/' + save_dir):
+                os.mkdir('data/' + save_dir)
 
-            P.save_weights('data/gen%04d/player%04d.h5' % (self.gen_number, i))
+            P.save_weights('data/%s/player%04d.h5' % (save_dir, i))
 
         print('Saving summary.')
-        self.summary.to_csv('data/summary.csv', index=False)
+        df_name = 'summary_test.csv' if test else 'summary.csv'
+        self.summary.to_csv('data/' + df_name, index=False)
 
-    def load_latest_gen(self):
+    def load_latest_gen(self, test=False):
+        load_dir = 'test' if test else 'gen%04d' % self.gen_number
+
         print('Loading summary.')
-        self.summary = pd.read_csv('data/summary.csv')
+        df_name = 'summary_test.csv' if test else 'summary.csv'
+        self.summary = pd.read_csv('data/' + df_name)
         self.gen_number = self.summary['generation'].max()
 
         for i, P in enumerate(self.players):
             print('Loading model %d...' % i)
-            P.load_weights('data/gen%04d/player%04d.h5' % (self.gen_number, i))
+            P.load_weights('data/%s/player%04d.h5' % (load_dir, i))
