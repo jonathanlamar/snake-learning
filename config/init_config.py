@@ -25,4 +25,4 @@ class InitConfig:
         self.duration_weight = 1
 
         # How big should the game be?
-        self.board_size = 50
+        self.board_size = 30

@@ -115,8 +115,10 @@ class Generation(InitConfig):
         self.gen_number += 1
 
     def train_iter(self, num_loops=1):
-        print('Loading latest generation and training %d more.' % num_loops)
-        self.load_latest_gen()
+        if self.players is None:
+            print('Loading latest generation and training %d more.' % num_loops)
+            self.load_latest_gen()
+
         for _ in range(num_loops):
             print('Advancing one generation.')
             self.advance_next_gen()
