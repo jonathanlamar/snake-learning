@@ -72,3 +72,20 @@ def test_fuzz_var():
     # This will fail with nonzero probability
     config = InitConfig()
     assert np.abs(arr_fuzz.var() - config.mutation_rate) < 0.01
+
+def test_save_and_load():
+    P = Player()
+    Q = Player()
+
+    # Make sure they are not equal to begin with
+    assert not all([np.all(x == y)
+                    for (x, y) in zip(P.model.get_weights(),
+                                      Q.model.get_weights())])
+
+    P.save_weights('data/test_saved_weights.h5')
+    Q.load_weights('data/test_saved_weights.h5')
+
+    # Make sure they are equal after Q loads P's weights
+    assert all([np.all(x == y)
+                for (x, y) in zip(P.model.get_weights(),
+                                  Q.model.get_weights())])
