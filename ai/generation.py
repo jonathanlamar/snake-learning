@@ -41,9 +41,14 @@ class Generation(InitConfig):
         for i in range(self.generation_size):
             seeds.append(randint(1000, 9999))
             if breeders is not None:
-                print('Breeding player %d.' % i)
-                P1, P2 = choice(breeders, 2, replace=False)
-                new_gen.append(P1.breed(P2))
+                # The top half of the breeders survive.
+                if i < self.number_to_breed // 2:
+                    print('Persisting breeder %d.' % i)
+                    new_gen.append(breeders[i])
+                else:
+                    print('Breeding player %d.' % i)
+                    P1, P2 = choice(breeders, 2, replace=False)
+                    new_gen.append(P1.breed(P2))
             else:
                 print('Creating player %d from scratch.' % i)
                 new_gen.append(Player())
@@ -142,9 +147,11 @@ class Generation(InitConfig):
 
         print('Loading summary.')
         df_name = 'summary_test.csv' if test else 'summary.csv'
-        self.summary = pd.read_csv('data/' + df_name)
-        self.gen_number = self.summary['generation'].max()
-        self.seeds = self.summary['seed'].values
+        df = pd.read_csv('data/' + df_name)
+        gen_number = df['generation'].max()
+        self.summary = df
+        self.gen_number = gen_number
+        self.seeds = df.loc[df['generation'] == gen_number, 'seed'].values
 
         players = []
         for i in range(self.generation_size):

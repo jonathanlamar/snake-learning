@@ -6,10 +6,10 @@ class InitConfig:
     def __init__(self):
 
         # Related to generations and breeding
-        self.generation_size = 20
-        self.number_to_breed = 5
-        # Variance of Gaussian noise added during breeding algorithm
-        self.mutation_rate = 0.1
+        self.generation_size = 200
+        self.number_to_breed = 10
+        # Standard deviation of Gaussian noise added during breeding algorithm
+        self.mutation_rate = 0.2
 
         # Related to halting the game:
         # This many frames with no score = kill
@@ -21,7 +21,7 @@ class InitConfig:
 
         # These are the coefficients of score and game duration in the fitness
         # function, respectively.
-        self.score_weight = 100
+        self.score_weight = 50
         self.duration_weight = 1
 
         # How big should the game be?
