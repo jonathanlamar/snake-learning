@@ -81,7 +81,18 @@ class Generation(InitConfig):
         # Metadata
         self.gen_number += 1
 
-        return self
+    def train_iter(self, num_loops=1):
+        print('Loading latest generation and training %d more.' % num_loops)
+        self.load_latest_gen()
+        for i in range(num_loops):
+            print('Advancing one generation.')
+            self.advance_next_gen()
+
+            print('Evaluating players...')
+            self.eval_players()
+
+            print('Saving generation.')
+            self.save_latest_gen()
 
     def save_latest_gen(self, test=False):
         save_dir = 'test' if test else 'gen%04d' % self.gen_number
