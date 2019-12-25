@@ -6,10 +6,10 @@ class InitConfig:
     def __init__(self):
 
         # Related to generations and breeding
-        self.generation_size = 20
-        self.number_to_breed = 5
+        self.generation_size = 200
+        self.number_to_breed = 10
         # Variance of Gaussian noise added during breeding algorithm
-        self.mutation_rate = 0
+        self.mutation_rate = 0.1
 
         # Related to halting the game:
         # This many frames with no score = kill
@@ -30,4 +30,4 @@ class InitConfig:
         # Seed for the random number generator.
         # I don't think this has any effect on the random weights for the
         # players, but does affect the placement of the apples.
-        self.seed = 1234
+        self.seed = None

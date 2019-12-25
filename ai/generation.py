@@ -50,11 +50,11 @@ class Generation(InitConfig):
         performances = (self.summary.loc[
                             self.summary['generation'] == self.gen_number,
                             'performance'
-                        ])
+                        ].values)
         top_k_inds = np.argsort(performances)[::-1][:self.number_to_breed]
         return self.players[top_k_inds]
 
-    def eval_players(self):
+    def eval_players(self, draw_game=False):
         # Have each player play the game and record performance
         # FIXME: This should be run in parallel
         scores = np.zeros(self.generation_size)
@@ -65,7 +65,7 @@ class Generation(InitConfig):
 
             # Ugh, state.  This alters G in place.
             G = GameState()
-            P.play_game(G)
+            P.play_game(G, draw_game)
 
             scores[i] = G.score
             durations[i] = G.time
@@ -124,9 +124,11 @@ class Generation(InitConfig):
         self.summary = pd.read_csv('data/' + df_name)
         self.gen_number = self.summary['generation'].max()
 
-        self.players = []
-        for i in range(self.gen_number):
+        players = []
+        for i in range(self.generation_size):
             print('Loading model %d...' % i)
             P = Player()
             P.load_weights('data/%s/player%04d.h5' % (load_dir, i))
-            self.players.append(P)
+            players.append(P)
+
+        self.players = np.array(players)
