@@ -22,8 +22,9 @@ class Generation(InitConfig):
         self.summary = pd.DataFrame()
 
         # Either breed previous gen or start fresh
-        self.players = self.breed(breeders)
+        self.players = None
 
+        # Metadata
         self.gen_number = gen_number
 
 
@@ -41,9 +42,15 @@ class Generation(InitConfig):
 
         return np.array(new_gen)
 
+    def spawn_random(self):
+        self.players = self.breed()
+
     def get_breeders(self):
         # Returns: Best performers based on self.scores
-        performances = self.summary['performance']
+        performances = (self.summary.loc[
+                            self.summary['generation'] == self.gen_number,
+                            'performance'
+                        ])
         top_k_inds = np.argsort(performances)[::-1][:self.number_to_breed]
         return self.players[top_k_inds]
 
@@ -84,7 +91,7 @@ class Generation(InitConfig):
     def train_iter(self, num_loops=1):
         print('Loading latest generation and training %d more.' % num_loops)
         self.load_latest_gen()
-        for i in range(num_loops):
+        for _ in range(num_loops):
             print('Advancing one generation.')
             self.advance_next_gen()
 
@@ -117,6 +124,9 @@ class Generation(InitConfig):
         self.summary = pd.read_csv('data/' + df_name)
         self.gen_number = self.summary['generation'].max()
 
-        for i, P in enumerate(self.players):
+        self.players = []
+        for i in range(self.gen_number):
             print('Loading model %d...' % i)
+            P = Player()
             P.load_weights('data/%s/player%04d.h5' % (load_dir, i))
+            self.players.append(P)

@@ -10,6 +10,7 @@ def test_load_generation():
                                                    Q.model.get_weights())])
 
     G = Generation()
+    G.spawn_random()
     G.eval_players()
     G.save_latest_gen(test=True)
 
@@ -21,11 +22,14 @@ def test_load_generation():
 
 def test_repeat_performance():
     G = Generation()
+    G.spawn_random()
     G.eval_players()
 
     df = G.summary
-
     G.summary = pd.DataFrame()
-    G.eval_players()
 
+    # Make sure df is nonempty
+    assert df.shape[0] != 0 and df.shape[1] != 0
+
+    G.eval_players()
     assert np.all(df == G.summary)
