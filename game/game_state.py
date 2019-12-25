@@ -13,11 +13,13 @@ class GameState(InitConfig):
     and a method for getting line of sight from the head of the snake to a wall
     in any of 8 directions.
     """
-    def __init__(self):
+    def __init__(self, seed=None):
 
         # Grab global config variables
         super().__init__()
 
+        # Set seed from RNG
+        self.seed = seed
         np.random.seed(self.seed)
 
         self.prize_loc = np.random.randint(0, self.board_size, 2)
@@ -62,9 +64,7 @@ class GameState(InitConfig):
         # Prize handling
         if all(next_loc == self.prize_loc):
             self.score += 1
-            X, Y = np.where(self.board == 0)
-            i = np.random.choice(range(len(X)))
-            self.prize_loc = np.array([X[i], Y[i]])
+            self.prize_loc = self._get_new_prize_loc()
 
         # Update location
         self.head_loc += self.direction
@@ -79,6 +79,10 @@ class GameState(InitConfig):
         # Add prize cell
         self.board[self.prize_loc[0], self.prize_loc[1]] = -1
 
+    def _get_new_prize_loc(self)
+        X, Y = np.where(self.board == 0)
+        i = np.random.choice(range(len(X)))
+        return np.array([X[i], Y[i]])
 
     def draw(self):
         os.system('clear')
