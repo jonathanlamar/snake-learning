@@ -9,19 +9,19 @@ def test_load_generation():
         return all([np.all(x == y) for x, y in zip(P.model.get_weights(),
                                                    Q.model.get_weights())])
 
-    G = Generation()
+    G = Generation(generation_size=10)
     G.spawn_random()
     G.eval_players()
     G.save_latest_gen(test=True)
 
-    H = Generation()
+    H = Generation(generation_size=10)
     H.load_latest_gen(test=True)
 
     assert all([player_equality(P, Q)
                 for P, Q in zip(G.players, H.players)])
 
 def test_repeat_performance():
-    G = Generation()
+    G = Generation(generation_size=10)
     G.spawn_random()
     G.eval_players()
 

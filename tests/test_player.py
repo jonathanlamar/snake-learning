@@ -71,7 +71,7 @@ def test_fuzz_var():
 
     # This will fail with nonzero probability
     config = InitConfig()
-    assert np.abs(arr_fuzz.var() - config.mutation_rate) < 0.01
+    assert np.abs(arr_fuzz.std() - config.mutation_rate) < 0.01
 
 def test_save_and_load():
     P = Player()

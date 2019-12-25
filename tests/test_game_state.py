@@ -120,3 +120,18 @@ def test_LOS_generation():
 
             # LOS does not contain head
             assert np.all(LOS != 1)
+
+def test_RNG_seed():
+    seed = 1234
+
+    G = GameState(seed)
+    G_prizes = []
+    for _ in range(100):
+        G_prizes.append(G._get_new_prize_loc())
+
+    H = GameState(seed)
+    H_prizes = []
+    for _ in range(100):
+        H_prizes.append(H._get_new_prize_loc())
+
+    assert all([np.all(x == y) for x, y in zip(G_prizes, H_prizes)])

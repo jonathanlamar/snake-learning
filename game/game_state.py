@@ -79,7 +79,7 @@ class GameState(InitConfig):
         # Add prize cell
         self.board[self.prize_loc[0], self.prize_loc[1]] = -1
 
-    def _get_new_prize_loc(self)
+    def _get_new_prize_loc(self):
         X, Y = np.where(self.board == 0)
         i = np.random.choice(range(len(X)))
         return np.array([X[i], Y[i]])

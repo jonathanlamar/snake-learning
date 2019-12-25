@@ -14,7 +14,7 @@ class Generation(InitConfig):
     generation of player instances, as well as spawning its successor
     generation.
     """
-    def __init__(self, breeders=None, gen_number=1):
+    def __init__(self, breeders=None, gen_number=1, generation_size=None):
 
         # Grab global config variables
         super().__init__()
@@ -24,12 +24,14 @@ class Generation(InitConfig):
 
         # Either breed previous gen or start fresh
         self.players = None
-        # Seeds for random number generation.  Helps recreate games
-        # TODO: Write test
-        self.seeds = None
 
         # Metadata
         self.gen_number = gen_number
+        # Seeds for random number generation.  Helps recreate games
+        # TODO: Write test
+        self.seeds = None
+        if generation_size is not None:
+            self.generation_size=generation_size
 
 
     def breed(self, breeders=None):
@@ -100,7 +102,9 @@ class Generation(InitConfig):
         # Updates self in place to form new generation.
         # Returns: self
         breeders, _ = self.get_breeders()
-        self.players = self.breed(breeders)
+        players, seeds = self.breed(breeders)
+        self.players = players
+        self.seeds = seeds
 
         # Metadata
         self.gen_number += 1
@@ -140,6 +144,7 @@ class Generation(InitConfig):
         df_name = 'summary_test.csv' if test else 'summary.csv'
         self.summary = pd.read_csv('data/' + df_name)
         self.gen_number = self.summary['generation'].max()
+        self.seeds = self.summary['seed'].values
 
         players = []
         for i in range(self.generation_size):
