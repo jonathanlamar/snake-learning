@@ -1,8 +1,6 @@
 # snake-learning
 
-I wanted to learn about genetic algorithms learning model, and while I was
-brainstorming data collection, I threw this game together really quick.  The
-neural network is a work in progress.
+I wanted to build a neual network to play snake.
 
 ## Overview
 
