@@ -3,33 +3,37 @@ import pandas as pd
 
 # My stuff
 from ai.generation import Generation
+from game.game_state import GameState
 
-def test_load_generation():
+def test_repeatable():
     def player_equality(P, Q):
-        return all([np.all(x == y) for x, y in zip(P.model.get_weights(),
-                                                   Q.model.get_weights())])
+        P_weights = P.model.get_weights()
+        Q_weights = Q.model.get_weights()
+        L = [np.all(p == q) for p, q in zip(P_weights, Q_weights)]
+        return all(L)
 
-    G = Generation(generation_size=10)
-    G.spawn_random()
-    G.eval_players()
-    G.save_latest_gen(test=True)
+    gen = Generation(generation_size=10)
+    gen.spawn_random()
+    gen.eval_players()
+    gen.save_latest_gen(test=True)
 
-    H = Generation(generation_size=10)
-    H.load_latest_gen(test=True)
+    gen2 = Generation(generation_size=10)
+    gen2.load_latest_gen(test=True)
 
-    assert all([player_equality(P, Q)
-                for P, Q in zip(G.players, H.players)])
+    # Does H have the same players
+    assert all([player_equality(P, Q) for P, Q in zip(gen.players, gen2.players)])
 
-def test_repeat_performance():
-    G = Generation(generation_size=10)
-    G.spawn_random()
-    G.eval_players()
+    df = gen2.summary
+    scores = []
+    durations = []
+    for i in range(gen2.generation_size):
+        P = gen2.players[i]
+        seed = df.loc[df['model']==i, 'seed'].values[0]
+        G = GameState(seed=seed)
+        P.play_game(G)
 
-    df = G.summary
-    G.summary = pd.DataFrame()
+        scores.append(G.score)
+        durations.append(G.time)
 
-    # Make sure df is nonempty
-    assert df.shape[0] != 0 and df.shape[1] != 0
-
-    G.eval_players()
-    assert np.all(df == G.summary)
+    assert np.all(np.array(scores) == df['score'].values)
+    assert np.all(np.array(durations) == df['duration'].values)

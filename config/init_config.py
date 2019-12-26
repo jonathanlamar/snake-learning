@@ -8,8 +8,8 @@ class InitConfig:
     def __init__(self):
 
         # Related to generations and breeding
-        self.generation_size = 200
-        self.number_to_breed = 10
+        self.generation_size = 2000
+        self.number_to_breed = 5
         # Standard deviation of Gaussian noise added during breeding algorithm
         self.mutation_rate = 0.2
 

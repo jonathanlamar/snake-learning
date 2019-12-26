@@ -21,6 +21,7 @@ def test_north_collision():
     G.update(new_direction=np.array([-1, 0]))
     assert G.dead
 
+
 def test_south_collision():
     G = GameState()
 
@@ -36,6 +37,7 @@ def test_south_collision():
     G.update(new_direction=np.array([1, 0]))
     assert G.dead
 
+
 def test_east_collision():
     G = GameState()
 
@@ -50,6 +52,7 @@ def test_east_collision():
     # Turn and collide
     G.update(new_direction=np.array([0, 1]))
     assert G.dead
+
 
 def test_west_collision():
     G = GameState()
@@ -85,6 +88,7 @@ def test_body_collision():
     G.update(new_direction=np.array([0, 1]))
     assert G.dead
 
+
 def test_prize_collection():
     G = GameState()
     hl = G.head_loc
@@ -97,6 +101,23 @@ def test_prize_collection():
     # Going up alongside fake body
     G.update(new_direction=np.array([-1,0]))
     assert G.score == 1
+
+
+def test_RNG_seed():
+    seed = 1234
+
+    G = GameState(seed)
+    G_prizes = []
+    for _ in range(100):
+        G_prizes.append(G._get_new_prize_loc())
+
+    H = GameState(seed)
+    H_prizes = []
+    for _ in range(100):
+        H_prizes.append(H._get_new_prize_loc())
+
+    assert all([np.all(x == y) for x, y in zip(G_prizes, H_prizes)])
+
 
 # Tests for LOS generation
 def test_LOS_generation():
@@ -120,18 +141,3 @@ def test_LOS_generation():
 
             # LOS does not contain head
             assert np.all(LOS != 1)
-
-def test_RNG_seed():
-    seed = 1234
-
-    G = GameState(seed)
-    G_prizes = []
-    for _ in range(100):
-        G_prizes.append(G._get_new_prize_loc())
-
-    H = GameState(seed)
-    H_prizes = []
-    for _ in range(100):
-        H_prizes.append(H._get_new_prize_loc())
-
-    assert all([np.all(x == y) for x, y in zip(G_prizes, H_prizes)])

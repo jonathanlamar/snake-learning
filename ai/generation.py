@@ -20,7 +20,7 @@ class Generation(InitConfig):
         super().__init__()
 
         # Dataframe with summary statistics on performance.
-        self.summary = pd.DataFrame()
+        self.summary = None
 
         # Either breed previous gen or start fresh
         self.players = None
@@ -65,6 +65,9 @@ class Generation(InitConfig):
 
     def get_leader_board(self):
         # Returns: DataFrame of key metrics for top performers (breeders) only
+        if self.summary is None:
+            raise RuntimeError('Current gen has not been evaluated.')
+
         return (self.summary.loc[
                    self.summary['generation'] == self.gen_number,
                    ['model', 'seed', 'performance']]
@@ -78,7 +81,7 @@ class Generation(InitConfig):
         scores = np.zeros(self.generation_size)
         durations = np.zeros(self.generation_size)
         perfs = np.zeros(self.generation_size)
-        seeds = np.zeros(self.generation_size)
+        seeds = np.zeros(self.generation_size, dtype=int)
         for i, P in enumerate(self.players):
 
             print('Evaluating player %d..' % i)
@@ -103,7 +106,7 @@ class Generation(InitConfig):
         })
 
         # Overwrite previous eval if exists
-        if self.summary.shape[0] == 0:
+        if self.summary is None:
             self.summary = new_summary
         else:
             df = self.summary[self.summary['generation'] < self.gen_number]
@@ -154,6 +157,11 @@ class Generation(InitConfig):
 
 
     def save_latest_gen(self, test=False):
+
+        if self.players is None or self.summary is None:
+            raise RuntimeError('Need to breed or spawn players and evaluate'
+                               'before saving.')
+
         save_dir = 'test' if test else 'gen%04d' % self.gen_number
 
         for i, P in enumerate(self.players):
@@ -169,15 +177,21 @@ class Generation(InitConfig):
         self.summary.to_csv('data/' + df_name, index=False)
 
 
-    def load_latest_gen(self, test=False):
+    def load_gen(self, gen_number, test=False):
+        print('Loading generation %d.' % gen_number)
 
         print('Loading summary.')
         df_name = 'summary_test.csv' if test else 'summary.csv'
-        df = pd.read_csv('data/' + df_name)
-        gen_number = df['generation'].max()
+        df = pd.read_csv(
+            'data/' + df_name,
+            dtype={'seed' : int}
+        )
+        df = df[df['generation'] <= gen_number]
+
+        load_dir = 'test' if test else 'gen%04d' % gen_number
+
         self.summary = df
         self.gen_number = gen_number
-        load_dir = 'test' if test else 'gen%04d' % self.gen_number
 
         players = []
         for i in range(self.generation_size):
@@ -187,3 +201,10 @@ class Generation(InitConfig):
             players.append(P)
 
         self.players = np.array(players)
+
+    def load_latest_gen(self, test=False):
+        df_name = 'summary_test.csv' if test else 'summary.csv'
+        df = pd.read_csv('data/' + df_name)
+        gen_number = df['generation'].max()
+
+        self.load_gen(gen_number, test)

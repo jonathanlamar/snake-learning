@@ -21,7 +21,6 @@ class Player(InitConfig):
         # Grab global config variables
         super().__init__()
 
-        # TODO: Try different activation functions.
         self.model = Sequential([
             Dense(24, input_shape=(24,)),
             Dense(18),
@@ -61,6 +60,7 @@ class Player(InitConfig):
             distances.append(self._detect(LOS > 0))
 
         return np.array(distances).reshape(1, 24)
+
 
     def _detect(self, line_of_sight):
         # Expects: A numpy array of booleans
@@ -103,6 +103,7 @@ class Player(InitConfig):
         else:
             raise RuntimeError('Some weird argmax.')
 
+
     def play_game(self, game_state, draw_game=False):
         # Play game until dead
         # Expects: GameState instance.
@@ -131,7 +132,7 @@ class Player(InitConfig):
     ###########################################################################
     #               Methods for making new Player instances
     ###########################################################################
-    def breed(self, other):
+    def breed(self, other, mutation_rate=None):
         # Combine with other and return new SnakeModel
         # Weights come as a list of arrays, one for each layer
         these_weights = self.model.get_weights()
@@ -140,10 +141,11 @@ class Player(InitConfig):
         new_weights = []
         for left_array, right_array in zip(these_weights, those_weights):
             child = self._cross_arrays(left_array, right_array)
-            child_mutated = self._mutate_array(child)
+            child_mutated = self._mutate_array(child, mutation_rate)
             new_weights.append(child_mutated)
 
         return Player(weights=new_weights)
+
 
     def _cross_arrays(self, tensor1, tensor2):
         # Starting completely random for now.  The other person took a rectangle
@@ -161,12 +163,18 @@ class Player(InitConfig):
 
         return crossed_tensor.reshape(tensor1.shape)
 
-    def _mutate_array(self, arr):
+
+    def _mutate_array(self, arr, mutation_rate=None):
         # Mutate weights by adding gaussian noise
-        return arr + normal(scale = self.mutation_rate, size=arr.shape)
+        if mutation_rate is None:
+            mutation_rate = self.mutation_rate
+
+        return arr + normal(scale = mutation_rate, size=arr.shape)
+
 
     def save_weights(self, save_loc):
         self.model.save_weights(save_loc)
+
 
     def load_weights(self, load_loc):
         self.model.load_weights(load_loc)
