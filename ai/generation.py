@@ -35,8 +35,11 @@ class Generation(InitConfig):
 
     def breed(self, breeders=None):
         # Either breed generation from list of breeders or start fresh
+        # Returns: array of Player instances bred from breeders
+
         new_gen = []
         for i in range(self.generation_size):
+
             if breeders is not None:
                 # The top half of the breeders survive.
                 if i < self.number_to_breed // 2:
@@ -46,22 +49,28 @@ class Generation(InitConfig):
                     print('Breeding player %d.' % i)
                     P1, P2 = choice(breeders, 2, replace=False)
                     new_gen.append(P1.breed(P2))
+
             else:
                 print('Creating player %d from scratch.' % i)
                 new_gen.append(Player())
 
         return np.array(new_gen)
 
+
     def spawn_random(self):
+        # Cold start: Spawn the first generation of players.
         players = self.breed()
         self.players = players
 
+
     def get_leader_board(self):
+        # Returns: DataFrame of key metrics for top performers (breeders) only
         return (self.summary.loc[
                    self.summary['generation'] == self.gen_number,
                    ['model', 'seed', 'performance']]
                 .sort_values('performance', ascending=False)
                 .head(self.number_to_breed))
+
 
     def eval_players(self):
         # Have each player play the game and record performance
@@ -82,7 +91,7 @@ class Generation(InitConfig):
             seeds[i] = seed
             scores[i] = G.score
             durations[i] = G.time
-            perfs[i] = self._get_performance(G.score, G.time)
+            perfs[i] = self.performance_metric(G.score, G.time)
 
         new_summary = pd.DataFrame({
             'generation' : self.gen_number,
@@ -100,20 +109,11 @@ class Generation(InitConfig):
             df = self.summary[self.summary['generation'] < self.gen_number]
             self.summary = pd.concat([df, new_summary])
 
-    def _get_performance(self, score, duration):
-        # return score * self.score_weight + duration * self.duration_weight
-        # TODO: This will start to fail eventually
-        if score < 10:
-            perf = (duration**2) * (2**score)
-        else:
-            perf = (duration**2) * (2**10) * (score - 9)
-
-        return perf
 
     def show_best(self):
+        # For checking qualitative behavior of best performers
         leader_board = self.get_leader_board()
 
-        # TODO: Debug this
         players = self.players[leader_board['model']]
         seeds = leader_board['seed'].astype(int)
         scores = leader_board['performance']
@@ -121,7 +121,7 @@ class Generation(InitConfig):
         for P, seed, score in zip(players, seeds, scores):
             G = GameState(seed=seed)
             P.play_game(G, draw_game=True)
-            assert score == self._get_performance(G.score, G.time)
+
 
     def advance_next_gen(self):
         # Updates self in place to form new generation.
@@ -134,7 +134,10 @@ class Generation(InitConfig):
         # Metadata
         self.gen_number += 1
 
+
     def train_iter(self, num_loops=1):
+        # Iterate over the standard breed-eval-save loop
+        # Requires at least one generation to be saved already.
         if self.players is None:
             print('Loading latest generation and training %d more.' % num_loops)
             self.load_latest_gen()
@@ -148,6 +151,7 @@ class Generation(InitConfig):
 
             print('Saving generation.')
             self.save_latest_gen()
+
 
     def save_latest_gen(self, test=False):
         save_dir = 'test' if test else 'gen%04d' % self.gen_number
@@ -163,6 +167,7 @@ class Generation(InitConfig):
         print('Saving summary.')
         df_name = 'summary_test.csv' if test else 'summary.csv'
         self.summary.to_csv('data/' + df_name, index=False)
+
 
     def load_latest_gen(self, test=False):
 

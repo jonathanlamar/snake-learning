@@ -1,3 +1,5 @@
+import numpy as np
+
 class InitConfig:
     """
     This class holds only values and gets inherited by anything that needs it.
@@ -7,22 +9,23 @@ class InitConfig:
 
         # Related to generations and breeding
         self.generation_size = 200
-        self.number_to_breed = 20
+        self.number_to_breed = 10
         # Standard deviation of Gaussian noise added during breeding algorithm
         self.mutation_rate = 0.2
 
         # Related to halting the game:
         # This many frames with no score = kill
-        self.max_time_no_score = 100
+        self.max_time_no_score = 200
         # Each new score allows this many more frames
         self.extra_time_per_score = 50
         # Overall max frames
-        self.max_time_allowed = 500
-
-        # These are the coefficients of score and game duration in the fitness
-        # function, respectively.
-        # self.score_weight = 100
-        # self.duration_weight = 1
+        self.max_time_allowed = 1000
 
         # How big should the game be?
         self.board_size = 30
+
+    def performance_metric(self, score, duration):
+        # This is the performance metric for the selection algorithm.
+        # Generation instances will use this function to decide fitness.
+
+        return np.log(1 + 2*duration) + 2*score
