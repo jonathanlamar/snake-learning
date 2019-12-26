@@ -19,8 +19,7 @@ class GameState(InitConfig):
         super().__init__()
 
         # Set seed from RNG
-        self.seed = seed
-        np.random.seed(self.seed)
+        np.random.seed(seed)
 
         self.prize_loc = np.random.randint(0, self.board_size, 2)
         self.head_loc  = np.array([self.board_size // 2, self.board_size // 2])

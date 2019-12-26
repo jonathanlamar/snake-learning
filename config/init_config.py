@@ -7,7 +7,7 @@ class InitConfig:
 
         # Related to generations and breeding
         self.generation_size = 200
-        self.number_to_breed = 10
+        self.number_to_breed = 20
         # Standard deviation of Gaussian noise added during breeding algorithm
         self.mutation_rate = 0.2
 
@@ -21,8 +21,8 @@ class InitConfig:
 
         # These are the coefficients of score and game duration in the fitness
         # function, respectively.
-        self.score_weight = 50
-        self.duration_weight = 1
+        # self.score_weight = 100
+        # self.duration_weight = 1
 
         # How big should the game be?
         self.board_size = 30
