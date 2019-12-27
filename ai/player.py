@@ -53,7 +53,8 @@ class Player(InitConfig):
             LOS = game_state.get_line_of_sight(dy, dx)
 
             # Distance to wall represented by 1+len(LOS)
-            distances.append(len(LOS) + 1)
+            # Trying inverse distance now
+            distances.append( 1.0 / (len(LOS) + 1) )
             # Distance to prize
             distances.append(self._detect(LOS == -1))
             # Distance to body
@@ -70,9 +71,12 @@ class Player(InitConfig):
         if len(target_locs) == 0:
             # If not found, then report index of the "horizon", which is
             # always board_size away, no matter where the head is located.
-            target_index = self.board_size - 1
+            # target_index = self.board_size - 1
+            # Trying something new: Just return 1 or 0
+            return 0
         else:
-            target_index = target_locs[0]
+            # target_index = target_locs[0]
+            return 1
 
         # Add 1 because LOS excludes snake head
         target_distance = target_index + 1
@@ -104,14 +108,14 @@ class Player(InitConfig):
             raise RuntimeError('Some weird argmax.')
 
 
-    def play_game(self, game_state, draw_game=False):
+    def play_game(self, game_state, draw_game=False, limit_time=True):
         # Play game until dead
         # Expects: GameState instance.
         # Returns: GameState
 
-        # TODO: In the future, save game boards as dataset for training other models?
-        time_limit = self.max_time_no_score
+        time_limit = self.max_time_no_score if limit_time else np.inf
         previous_score = 0
+
         while (not game_state.dead) and (game_state.time < time_limit):
             model_input = self.parse_game_state(game_state)
             new_direction = self.decide_direction(model_input)

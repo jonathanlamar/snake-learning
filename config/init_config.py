@@ -11,13 +11,13 @@ class InitConfig:
         self.generation_size = 2000
         self.number_to_breed = 5
         # Standard deviation of Gaussian noise added during breeding algorithm
-        self.mutation_rate = 0.2
+        self.mutation_rate = 0.8
 
         # Related to halting the game:
         # This many frames with no score = kill
-        self.max_time_no_score = 200
+        self.max_time_no_score = 500
         # Each new score allows this many more frames
-        self.extra_time_per_score = 50
+        self.extra_time_per_score = 100
         # Overall max frames
         self.max_time_allowed = 1000
 

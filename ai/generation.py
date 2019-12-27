@@ -28,7 +28,6 @@ class Generation(InitConfig):
         # Metadata
         self.gen_number = gen_number
         # Seeds for random number generation.  Helps recreate games
-        # TODO: Write test
         if generation_size is not None:
             self.generation_size=generation_size
 
@@ -77,7 +76,6 @@ class Generation(InitConfig):
 
     def eval_players(self):
         # Have each player play the game and record performance
-        # FIXME: This should be run in parallel
         scores = np.zeros(self.generation_size)
         durations = np.zeros(self.generation_size)
         perfs = np.zeros(self.generation_size)
@@ -119,11 +117,16 @@ class Generation(InitConfig):
 
         players = self.players[leader_board['model']]
         seeds = leader_board['seed'].astype(int)
-        scores = leader_board['performance']
 
-        for P, seed, score in zip(players, seeds, scores):
+        for P, seed in zip(players, seeds):
             G = GameState(seed=seed)
             P.play_game(G, draw_game=True)
+
+
+    def get_best_player(self):
+        leader_board = self.get_leader_board()
+        best_ind = leader_board['model'].iloc[0]
+        return self.players[best_ind]
 
 
     def advance_next_gen(self):
