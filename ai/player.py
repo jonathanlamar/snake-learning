@@ -22,10 +22,10 @@ class Player(InitConfig):
         super().__init__()
 
         self.model = Sequential([
-            Dense(24, input_shape=(24,)),
-            Dense(18),
-            Dense(18),
-            Dense(4)
+            Dense(24, input_shape=(24,), activation='relu'),
+            Dense(18, activation='relu'),
+            Dense(18, activation='relu'),
+            Dense(4, activation='relu')
         ])
 
         # I have to specify a loss in order to compile, even though I won't
@@ -53,17 +53,24 @@ class Player(InitConfig):
             LOS = game_state.get_line_of_sight(dy, dx)
 
             # Distance to wall represented by 1+len(LOS)
+            dist_to_wall = len(LOS) + 1
             # Trying inverse distance now
-            distances.append( 1.0 / (len(LOS) + 1) )
+            distances.append( 1.0 / dist_to_wall )
             # Distance to prize
-            distances.append(self._detect(LOS == -1))
+            distances.append(self._one_hot_detect(LOS == -1))
             # Distance to body
-            distances.append(self._detect(LOS > 0))
+            distances.append(self._one_hot_detect(LOS > 0))
 
         return np.array(distances).reshape(1, 24)
 
 
-    def _detect(self, line_of_sight):
+    def _one_hot_detect(self, line_of_sight):
+        # Expects: A numpy array of booleans
+        # Returns: 1 if any value is true, 0 otherwise
+        return int(any(line_of_sight))
+
+
+    def _dist_detect(self, line_of_sight):
         # Expects: A numpy array of booleans
         # Returns: index of first True from 0.  Length of array if none exist.
 
@@ -71,12 +78,9 @@ class Player(InitConfig):
         if len(target_locs) == 0:
             # If not found, then report index of the "horizon", which is
             # always board_size away, no matter where the head is located.
-            # target_index = self.board_size - 1
-            # Trying something new: Just return 1 or 0
-            return 0
+            target_index = self.board_size - 1
         else:
-            # target_index = target_locs[0]
-            return 1
+            target_index = target_locs[0]
 
         # Add 1 because LOS excludes snake head
         target_distance = target_index + 1
@@ -152,8 +156,10 @@ class Player(InitConfig):
 
 
     def _cross_arrays(self, tensor1, tensor2):
-        # Starting completely random for now.  The other person took a rectangle
-        # from one side and the rest from the other.
+        # Expects: Two numpy arrays of same shape.
+        # Returns: "crossed" array, which is of the same shape
+        # Select random index.  Everything before in lexicographic order comes
+        # from tensor1, everything after comes from tensor2
 
         if tensor1.shape != tensor2.shape:
             raise RuntimeError('Incompatible matrix shapes for crossover.')

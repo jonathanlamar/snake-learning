@@ -74,7 +74,6 @@ def test_fuzz_var():
     arr_fuzz = player._mutate_array(arr, mutation_rate=1)
 
     # This will fail with nonzero probability
-    config = InitConfig()
     assert np.abs(arr_fuzz.std() - 1) < 0.001
 
 
