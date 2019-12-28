@@ -25,7 +25,7 @@ class GameState(InitConfig):
         self.head_loc  = np.array([self.board_size // 2, self.board_size // 2])
         self.direction = np.array([0, 0]) # Represents the ordered pair (dy/dt, dx/dt)
         self.score     = 0
-        self.time      = 0 # Keep track of how long the game has lasted
+        self.duration  = 0 # Keep track of how long the game has lasted
         self.dead      = False
 
         # The board will be drawn from this array. Positive values
@@ -67,7 +67,7 @@ class GameState(InitConfig):
 
         # Update location
         self.head_loc += self.direction
-        self.time += 1
+        self.duration += 1
 
         # Increment all nonzero cells (will also erase prize)
         self.board += (self.board != 0).astype(int)

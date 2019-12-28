@@ -33,7 +33,7 @@ def test_repeatable():
         P.play_game(G)
 
         scores.append(G.score)
-        durations.append(G.time)
+        durations.append(G.duration)
 
     assert np.all(np.array(scores) == df['score'].values)
     assert np.all(np.array(durations) == df['duration'].values)

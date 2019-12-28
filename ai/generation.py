@@ -64,22 +64,24 @@ class Generation(InitConfig):
 
     def get_leader_board(self):
         # Returns: DataFrame of key metrics for top performers (breeders) only
+
         if self.summary is None:
             raise RuntimeError('Current gen has not been evaluated.')
 
-        return (self.summary.loc[
-                   self.summary['generation'] == self.gen_number,
-                   ['model', 'seed', 'performance']]
+        return (self.summary
+                .query('generation == %d' % self.gen_number)
+                .drop('generation', axis=1)
                 .sort_values('performance', ascending=False)
                 .head(self.number_to_breed))
 
 
     def eval_players(self):
         # Have each player play the game and record performance
-        scores = np.zeros(self.generation_size)
+        scores    = np.zeros(self.generation_size)
         durations = np.zeros(self.generation_size)
-        perfs = np.zeros(self.generation_size)
-        seeds = np.zeros(self.generation_size, dtype=int)
+        perfs     = np.zeros(self.generation_size)
+        seeds     = np.zeros(self.generation_size, dtype=int)
+
         for i, P in enumerate(self.players):
 
             print('Evaluating player %d..' % i)
@@ -89,17 +91,17 @@ class Generation(InitConfig):
             G = GameState(seed=seed)
             P.play_game(G)
 
-            seeds[i] = seed
-            scores[i] = G.score
-            durations[i] = G.time
-            perfs[i] = self.performance_metric(G.score, G.time)
+            seeds[i]     = seed
+            scores[i]    = G.score
+            durations[i] = G.duration
+            perfs[i]     = self.performance_metric(G.score, G.duration)
 
         new_summary = pd.DataFrame({
-            'generation' : self.gen_number,
-            'model' : range(self.generation_size),
-            'seed' : seeds,
-            'score' : scores,
-            'duration' : durations,
+            'generation'  : self.gen_number,
+            'model'       : range(self.generation_size),
+            'seed'        : seeds,
+            'score'       : scores,
+            'duration'    : durations,
             'performance' : perfs
         })
 
@@ -133,8 +135,8 @@ class Generation(InitConfig):
         # Updates self in place to form new generation.
         # Returns: self
         leader_board = self.get_leader_board()
-        breeders = self.players[leader_board['model']]
-        players = self.breed(breeders)
+        breeders     = self.players[leader_board['model']]
+        players      = self.breed(breeders)
         self.players = players
 
         # Metadata

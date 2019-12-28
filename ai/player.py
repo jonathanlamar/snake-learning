@@ -42,12 +42,16 @@ class Player(InitConfig):
     ###########################################################################
     def parse_game_state(self, game_state):
         # Look in 8 directions (N, NE, E, SE, S, SW, W, NW) for wall, prize,
-        # and body.  Return distance to each in all 8 directions (as an array
-        # of length 24)
-        distances = []
-        for dy, dx in product([-1, 0, 1], [-1, 0, 1]):
-            if dy == 0 and dx == 0:
-                continue
+        # and body.  Return one-hot encoded presence of prize and body, and
+        # inverse of distance to wall in all 8 directions (as an array of
+        # length 24).
+
+        # Hard coding direction order
+        directions = [(-1, -1), (-1, 0), (-1, 1), (0, -1),
+                      (0, 1), (1, -1), (1, 0), (1, 1)]
+        inputs = []
+
+        for dy, dx in directions:
 
             # Line of sight: an array of game booaord values starting from the
             # head, and going in this direction all the way to the nearest wall.
@@ -56,13 +60,13 @@ class Player(InitConfig):
             # Distance to wall represented by 1+len(LOS)
             dist_to_wall = len(LOS) + 1
             # Trying inverse distance now
-            distances.append( 1.0 / dist_to_wall )
+            inputs.append( 1.0 / dist_to_wall )
             # Distance to prize
-            distances.append(self._one_hot_detect(LOS == -1))
+            inputs.append(self._one_hot_detect(LOS == -1))
             # Distance to body
-            distances.append(self._one_hot_detect(LOS > 0))
+            inputs.append(self._one_hot_detect(LOS > 0))
 
-        return np.array(distances).reshape(1, 24)
+        return np.array(inputs).reshape(1, 24)
 
 
     def _one_hot_detect(self, line_of_sight):
@@ -121,7 +125,7 @@ class Player(InitConfig):
         time_limit = self.max_time_no_score if limit_time else np.inf
         previous_score = 0
 
-        while (not game_state.dead) and (game_state.time < time_limit):
+        while (not game_state.dead) and (game_state.duration < time_limit):
             model_input = self.parse_game_state(game_state)
             new_direction = self.decide_direction(model_input)
 

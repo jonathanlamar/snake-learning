@@ -2,8 +2,8 @@ import numpy as np
 
 class InitConfig:
     """
-    This class holds only values and gets inherited by anything that needs it.
-    I'm doing this instead of a run script with global variables.
+    This class holds everything intended to be configurable by the user in one
+    location.  I'm doing this instead of a run script with global variables.
     """
     def __init__(self):
 
@@ -11,7 +11,7 @@ class InitConfig:
         self.generation_size = 2000
         self.number_to_breed = 10
         # Standard deviation of Gaussian noise added during breeding algorithm
-        self.mutation_rate = 0.8
+        self.mutation_rate = 0.3
 
         # Related to halting the game:
         # This many frames with no score = kill
@@ -28,6 +28,7 @@ class InitConfig:
         # of size 4, and num_hidden_layers input layers of size hidden_layer_size
         self.num_hidden_layers = 2
         self.hidden_layer_size = 18
+
 
     def performance_metric(self, score, duration):
         # This is the performance metric for the selection algorithm.
