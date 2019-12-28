@@ -9,7 +9,7 @@ class InitConfig:
 
         # Related to generations and breeding
         self.generation_size = 2000
-        self.number_to_breed = 5
+        self.number_to_breed = 10
         # Standard deviation of Gaussian noise added during breeding algorithm
         self.mutation_rate = 0.8
 
@@ -23,6 +23,11 @@ class InitConfig:
 
         # How big should the game be?
         self.board_size = 30
+
+        # The neural network will have an input layer of size 24, output layer
+        # of size 4, and num_hidden_layers input layers of size hidden_layer_size
+        self.num_hidden_layers = 2
+        self.hidden_layer_size = 18
 
     def performance_metric(self, score, duration):
         # This is the performance metric for the selection algorithm.
