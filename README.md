@@ -1,7 +1,7 @@
 # snake-learning
 
 I wanted to build a neual network to play snake.  My original idea was to use
-reinforcement learning, but I found a genertic solution and it seemed pretty
+reinforcement learning, but I found a genetic solution and it seemed pretty
 simple to recreate.
 
 ## Overview
@@ -47,8 +47,6 @@ Each time the snake catches a prize, the game state iterates the score (call it
 ```python
 fitness = np.log(1 + A*duration) + B*score
 ```
-
-for some `A` and `B` which are tunable by the user.
 
 ### Breeding
 
