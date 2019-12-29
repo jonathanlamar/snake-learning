@@ -41,7 +41,7 @@ class Generation(InitConfig):
 
             if breeders is not None:
                 # The top half of the breeders survive.
-                if i < self.number_to_breed // 2:
+                if i < self.number_to_breed:
                     print('Persisting breeder %d.' % i)
                     new_gen.append(breeders[i])
                 else:

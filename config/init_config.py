@@ -8,7 +8,9 @@ class InitConfig:
     def __init__(self):
 
         # Related to generations and breeding
+        # Total population per generation
         self.generation_size = 2000
+        # Number of top players to brred next generation
         self.number_to_breed = 10
         # Standard deviation of Gaussian noise added during breeding algorithm
         self.mutation_rate = 0.3
