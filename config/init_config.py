@@ -32,8 +32,8 @@ class InitConfig:
         self.hidden_layer_size = 18
 
 
-    def performance_metric(self, score, duration):
-        # This is the performance metric for the selection algorithm.
+    def fitness_function(self, score, duration):
+        # This is the fitness function for the selection algorithm.
         # Generation instances will use this function to decide fitness.
 
         return np.log(1 + 2*duration) + 2*score

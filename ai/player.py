@@ -12,9 +12,9 @@ from config.init_config import InitConfig
 
 class Player(InitConfig):
     """
-    This class mainly holds a keras model (for now, fixed geometry),
-    with methods for reading a game state and deciding how to move, as well as
-    methods for breeding with another Player instance.
+    This class mainly holds a keras model with methods for reading a game
+    state and deciding how to move, as well as methods for breeding with
+    another Player instance.
     """
     def __init__(self, weights=None):
 
