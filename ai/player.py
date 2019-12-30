@@ -12,9 +12,9 @@ from config.init_config import InitConfig
 
 class Player(InitConfig):
     """
-    This class mainly holds a keras model (for now, fixed geometry),
-    with methods for reading a game state and deciding how to move, as well as
-    methods for breeding with another Player instance.
+    This class mainly holds a keras model with methods for reading a game
+    state and deciding how to move, as well as methods for breeding with
+    another Player instance.
     """
     def __init__(self, weights=None):
 
@@ -134,7 +134,7 @@ class Player(InitConfig):
             if draw_game:
                 game_state.draw()
 
-            if game_state.score > previous_score:
+            if limit_time and (game_state.score > previous_score):
                 time_limit = min(self.max_time_allowed,
                                  time_limit + self.extra_time_per_score)
                 previous_score = game_state.score

@@ -74,5 +74,5 @@ class.  We use a standard fully connected network with an input layer of size 24
 `num_hidden_layers` hidden layers each of size `hidden_layer_size`, and an output
 of dimension 4.  Unfortunately, these cannot be changed without starting over.
 The inputs encode that the snake is looking in 8 directions (four cardinal and
-four diagonal).  In each direction, she is looking for a prize, distance to a
+four diagonal).  In each direction, it is looking for a prize, distance to a
 wall, and itself.  The outputs encode which direction to move.

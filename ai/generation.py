@@ -19,7 +19,7 @@ class Generation(InitConfig):
         # Grab global config variables
         super().__init__()
 
-        # Dataframe with summary statistics on performance.
+        # Dataframe with summary statistics on fitness.
         self.summary = None
 
         # Either breed previous gen or start fresh
@@ -71,7 +71,7 @@ class Generation(InitConfig):
         return (self.summary
                 .query('generation == %d' % self.gen_number)
                 .drop('generation', axis=1)
-                .sort_values('performance', ascending=False)
+                .sort_values('fitness', ascending=False)
                 .head(self.number_to_breed))
 
 
@@ -94,15 +94,15 @@ class Generation(InitConfig):
             seeds[i]     = seed
             scores[i]    = G.score
             durations[i] = G.duration
-            perfs[i]     = self.performance_metric(G.score, G.duration)
+            perfs[i]     = self.fitness_function(G.score, G.duration)
 
         new_summary = pd.DataFrame({
-            'generation'  : self.gen_number,
-            'model'       : range(self.generation_size),
-            'seed'        : seeds,
-            'score'       : scores,
-            'duration'    : durations,
-            'performance' : perfs
+            'generation' : self.gen_number,
+            'model'      : range(self.generation_size),
+            'seed'       : seeds,
+            'score'      : scores,
+            'duration'   : durations,
+            'fitness'    : perfs
         })
 
         # Overwrite previous eval if exists
@@ -123,6 +123,56 @@ class Generation(InitConfig):
         for P, seed in zip(players, seeds):
             G = GameState(seed=seed)
             P.play_game(G, draw_game=True)
+
+
+    def reevaluate_best_players(self, games_per_player=10):
+        leader_board = self.get_leader_board()
+        inds = leader_board['model']
+
+        scores    = []
+        durations = []
+        perfs     = []
+        players   = []
+
+        for ind, P in zip(inds, self.players[inds]):
+            print('Evaluating player %d on %d games.' % (ind, games_per_player))
+            for i in range(games_per_player):
+                print('Game %d...' % (i + 1))
+
+                G = GameState()
+                P.play_game(G)
+
+                players.append(ind)
+                scores.append(G.score)
+                durations.append(G.duration)
+                perfs.append(self.fitness_function(G.score, G.duration))
+
+        df = (pd
+              .DataFrame({
+                  'model'       : players,
+                  'score'       : scores,
+                  'duration'    : durations,
+                  'fitness' : perfs
+              })
+              .groupby('model')
+              .agg(
+                  mean_score   = ('score', np.mean),
+                  median_score = ('score', np.median),
+                  max_score    = ('score', np.max),
+                  std_score    = ('score', np.std),
+
+                  mean_dur     = ('duration', np.mean),
+                  median_dur   = ('duration', np.median),
+                  max_dur      = ('duration', np.max),
+                  std_dur      = ('duration', np.std),
+
+                  mean_perf    = ('fitness', np.mean),
+                  median_perf  = ('fitness', np.median),
+                  max_perf     = ('fitness', np.max),
+                  std_perf     = ('fitness', np.std)
+              ))
+
+        return df
 
 
     def get_best_player(self):
