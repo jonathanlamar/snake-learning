@@ -1,10 +1,12 @@
 # snake-learning
 
+![Best performer](https://media.giphy.com/media/lPdDrwvv94CtkHIpzp/giphy.gif)
+
+## Overview
+
 I wanted to build a neual network to play snake.  My original idea was to use
 reinforcement learning, but I found a genetic solution and it seemed pretty
 simple to recreate.
-
-## Overview
 
 ### Goals
 
