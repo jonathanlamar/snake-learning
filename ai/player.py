@@ -138,6 +138,9 @@ class Player(InitConfig):
                 time_limit = min(self.max_time_allowed,
                                  time_limit + self.extra_time_per_score)
                 previous_score = game_state.score
+            elif game_state.score > previous_score:
+                # Don't update time limit in this case.
+                previous_score = game_state.score
 
         return game_state
 
