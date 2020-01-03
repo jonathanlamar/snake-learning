@@ -40,7 +40,7 @@ class Generation(InitConfig):
         for i in range(self.generation_size):
 
             if breeders is not None:
-                # The top half of the breeders survive.
+                # The breeders survive.
                 if i < self.number_to_breed:
                     print('Persisting breeder %d.' % i)
                     new_gen.append(breeders[i])
@@ -86,7 +86,6 @@ class Generation(InitConfig):
 
             print('Evaluating player %d..' % i)
 
-            # Ugh, state.  This alters G in place.
             seed = randint(1000, 9999)
             G = GameState(seed=seed)
             P.play_game(G)
