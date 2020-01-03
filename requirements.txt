@@ -26,9 +26,6 @@ py==1.8.0
 pyasn1==0.4.8
 pyasn1-modules==0.2.7
 pynput==1.5.2
-pyobjc-core==6.1
-pyobjc-framework-Cocoa==6.1
-pyobjc-framework-Quartz==6.1
 pyparsing==2.4.5
 pytest==5.3.2
 python-xlib==0.26

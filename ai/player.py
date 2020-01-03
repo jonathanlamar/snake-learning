@@ -6,6 +6,7 @@ from time import sleep
 import numpy as np
 import tensorflow as tf
 import tensorflow.keras as ks
+from time import sleep
 
 # My stuff
 from config.init_config import InitConfig
@@ -133,6 +134,7 @@ class Player(InitConfig):
 
             if draw_game:
                 game_state.draw()
+                sleep(0.02)
 
             if limit_time and (game_state.score > previous_score):
                 time_limit = min(self.max_time_allowed,
