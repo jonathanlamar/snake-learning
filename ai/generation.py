@@ -42,18 +42,23 @@ class Generation(InitConfig):
             if breeders is not None:
                 # The breeders survive.
                 if i < self.number_to_breed:
-                    print('Persisting breeder %d.' % i)
+                    self._print('Persisting breeder %d.' % i)
                     new_gen.append(breeders[i])
                 else:
-                    print('Breeding player %d.' % i)
+                    self._print('Breeding player %d.' % i)
                     P1, P2 = choice(breeders, 2, replace=False)
                     new_gen.append(P1.breed(P2))
 
             else:
-                print('Creating player %d from scratch.' % i)
+                self._print('Creating player %d from scratch.' % i)
                 new_gen.append(Player())
 
         return np.array(new_gen)
+
+
+    def _print(self, msg):
+        os.system('clear')
+        print(msg)
 
 
     def spawn_random(self):
@@ -84,7 +89,7 @@ class Generation(InitConfig):
 
         for i, P in enumerate(self.players):
 
-            print('Evaluating player %d..' % i)
+            self._print('Evaluating player %d..' % i)
 
             seed = randint(1000, 9999)
             G = GameState(seed=seed)
@@ -134,9 +139,9 @@ class Generation(InitConfig):
         players   = []
 
         for ind, P in zip(inds, self.players[inds]):
-            print('Evaluating player %d on %d games.' % (ind, games_per_player))
+            self._print('Evaluating player %d on %d games.' % (ind, games_per_player))
             for i in range(games_per_player):
-                print('Game %d...' % (i + 1))
+                self._print('Game %d...' % (i + 1))
 
                 G = GameState()
                 P.play_game(G)
@@ -196,17 +201,17 @@ class Generation(InitConfig):
         # Iterate over the standard breed-eval-save loop
         # Requires at least one generation to be saved already.
         if self.players is None:
-            print('Loading latest generation and training %d more.' % num_loops)
+            self._print('Loading latest generation and training %d more.' % num_loops)
             self.load_latest_gen()
 
         for _ in range(num_loops):
-            print('Advancing one generation.')
+            self._print('Advancing one generation.')
             self.advance_next_gen()
 
-            print('Evaluating players...')
+            self._print('Evaluating players...')
             self.eval_players()
 
-            print('Saving generation.')
+            self._print('Saving generation.')
             self.save_latest_gen()
 
 
@@ -219,22 +224,24 @@ class Generation(InitConfig):
         save_dir = 'test' if test else 'gen%04d' % self.gen_number
 
         for i, P in enumerate(self.players):
-            print('Saving player %d...' % i)
+            self._print('Saving player %d...' % i)
 
             if not os.path.exists('data/' + save_dir):
                 os.mkdir('data/' + save_dir)
 
             P.save_weights('data/%s/player%04d.h5' % (save_dir, i))
 
-        print('Saving summary.')
+        self._print('Saving summary.')
         df_name = 'summary_test.csv' if test else 'summary.csv'
         self.summary.to_csv('data/' + df_name, index=False)
 
+        self._print("Done.")
+
 
     def load_gen(self, gen_number, test=False):
-        print('Loading generation %d.' % gen_number)
+        self._print('Loading generation %d.' % gen_number)
 
-        print('Loading summary.')
+        self._print('Loading summary.')
         df_name = 'summary_test.csv' if test else 'summary.csv'
         df = pd.read_csv(
             'data/' + df_name,
@@ -249,7 +256,7 @@ class Generation(InitConfig):
 
         players = []
         for i in range(self.generation_size):
-            print('Loading model %d...' % i)
+            self._print('Loading model %d...' % i)
             P = Player()
             P.load_weights('data/%s/player%04d.h5' % (load_dir, i))
             players.append(P)
