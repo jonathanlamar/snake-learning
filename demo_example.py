@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 from ai.player import Player
 from game.game_state import GameState
 import numpy as np

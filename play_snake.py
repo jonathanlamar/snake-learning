@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-
 import numpy as np
 from time import sleep
 from pynput.keyboard import Key, Listener
