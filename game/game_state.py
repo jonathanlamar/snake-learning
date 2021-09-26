@@ -1,8 +1,7 @@
 import os
-import pickle
+
 import numpy as np
 
-# My stuff
 from config.init_config import InitConfig
 
 class GameState(InitConfig):
@@ -14,8 +13,6 @@ class GameState(InitConfig):
     in any of 8 directions.
     """
     def __init__(self, seed=None):
-
-        # Grab global config variables
         super().__init__()
 
         # Set seed from RNG
@@ -42,7 +39,7 @@ class GameState(InitConfig):
 
 
     def update(self, new_direction):
-        # Direction update (only if valid, i.e., no reversing direction)
+        """ Direction update (only if valid, i.e., no reversing direction) """
         if not all(new_direction == -1*(self.direction)):
             self.direction = new_direction
 
@@ -119,9 +116,11 @@ class GameState(InitConfig):
     # of Player class.)
     ###########################################################################
     def get_line_of_sight(self, dy, dx):
-        # Expects: direction written as a pair dy, dx
-        # Returns: Ray starting one from head_loc extending in that direction
-        # to the nearest wall.  The values in the ray are from the game board.
+        """
+        Expects: direction written as a pair dy, dx
+        Returns: Ray starting one from head_loc extending in that direction to
+        the nearest wall.  The values in the ray are from the game board.
+        """
         r, c = self.head_loc
 
         # Start from 1 to leave out snake head

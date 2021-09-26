@@ -10,3 +10,4 @@ venv/
 *.ipynb
 
 !data/player0431.h5
+*.pyc
