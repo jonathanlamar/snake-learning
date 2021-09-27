@@ -82,20 +82,14 @@ class Generation(InitConfig):
     def eval_players(self):
         """ Have each player play the game and record performance """
         new_summary = pd.DataFrame(
-            columns=["generation", "model" "seed", "score", "duration", "fitness"]
+            columns=["generation", "model", "seed", "score", "duration", "fitness"]
         )
 
-        def iter(i, P):
+        for i, P in enumerate(self.players):
+            self._print(f"Evaluating player {i}.")
             seed = randint(1000, 9999)
             G = GameState(seed=seed)
             P.play_game(G)
-
-            return i, seed, G
-
-        players = mp.Pool(mp.cpu_count())
-        results = players.map(iter, self.players)
-
-        for i, seed, G in results:
             new_summary.loc[i] = (
                 self.gen_number,
                 i,
@@ -184,7 +178,7 @@ class Generation(InitConfig):
         Returns: self
         """
         leader_board = self.get_leader_board()
-        breeders = self.players[leader_board["model"]]
+        breeders = self.players[[int(i) for i in leader_board["model"]]]
         players = self.breed(breeders)
         self.players = players
 

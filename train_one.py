@@ -5,7 +5,7 @@
 
 from ai.generation import Generation
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     gen = Generation()
     gen.load_latest_gen()
     gen.train_iter(1)
