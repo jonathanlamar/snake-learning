@@ -10,6 +10,18 @@ from game.game_state import GameState
 import pandas as pd
 
 
+def _eval_iter(triple):
+    i, seed, weights = triple
+    print(f"Evaluating player {i} on game {seed}.")
+
+    G = GameState(seed=seed)
+    P = Player()
+    P.model.set_weights(weights)
+    P.play_game(G)
+
+    return i, seed, G
+
+
 class Generation(InitConfig):
     """
     This class is responsible for managing the spawning and ranking of one
@@ -18,7 +30,6 @@ class Generation(InitConfig):
     """
 
     def __init__(self, breeders=None, gen_number=1, generation_size=None):
-        # Grab global config variables
         super().__init__()
 
         # Dataframe with summary statistics on fitness.
@@ -73,25 +84,32 @@ class Generation(InitConfig):
             raise RuntimeError("Current gen has not been evaluated.")
 
         return (
-            self.summary.query("generation == %d" % self.gen_number)
-            .drop("generation", axis=1)
+            self.summary.groupby("model")
+            .agg({"fitness": "mean"})
             .sort_values("fitness", ascending=False)
             .head(self.number_to_breed)
+            .reset_index()
         )
 
     def eval_players(self):
         """ Have each player play the game and record performance """
         new_summary = pd.DataFrame(
-            columns=["generation", "model", "seed", "score", "duration", "fitness"]
+            columns=["model", "seed", "score", "duration", "fitness"]
         )
 
-        for i, P in enumerate(self.players):
-            self._print(f"Evaluating player {i}.")
-            seed = randint(1000, 9999)
-            G = GameState(seed=seed)
-            P.play_game(G)
-            new_summary.loc[i] = (
-                self.gen_number,
+        self._print("Evaluating players.")
+        with mp.get_context("spawn").Pool(mp.cpu_count()) as pool:
+            results = pool.map(
+                _eval_iter,
+                [
+                    (i, seed, P.model.get_weights())
+                    for (i, P) in enumerate(self.players)
+                    for seed in randint(1000, 9999, size=10)
+                ],
+            )
+
+        for j, (i, seed, G) in enumerate(results):
+            new_summary.loc[j] = (
                 i,
                 seed,
                 G.score,
@@ -99,78 +117,7 @@ class Generation(InitConfig):
                 self.fitness_function(G.score, G.duration),
             )
 
-        # Overwrite previous eval if exists
-        if self.summary is None:
-            self.summary = new_summary
-        else:
-            df = self.summary[self.summary["generation"] < self.gen_number]
-            self.summary = pd.concat([df, new_summary])
-
-    def show_best(self):
-        """ For checking qualitative behavior of best performers """
-        leader_board = self.get_leader_board()
-
-        players = self.players[leader_board["model"]]
-        seeds = leader_board["seed"].astype(int)
-
-        for P, seed in zip(players, seeds):
-            G = GameState(seed=seed)
-            P.play_game(G, draw_game=True)
-
-    def reevaluate_best_players(self, games_per_player=10):
-        leader_board = self.get_leader_board()
-        inds = leader_board["model"]
-
-        scores = []
-        durations = []
-        perfs = []
-        players = []
-
-        for ind, P in zip(inds, self.players[inds]):
-            self._print("Evaluating player %d on %d games." % (ind, games_per_player))
-            for i in range(games_per_player):
-                self._print("Game %d..." % (i + 1))
-
-                G = GameState()
-                P.play_game(G)
-
-                players.append(ind)
-                scores.append(G.score)
-                durations.append(G.duration)
-                perfs.append(self.fitness_function(G.score, G.duration))
-
-        df = (
-            pd.DataFrame(
-                {
-                    "model": players,
-                    "score": scores,
-                    "duration": durations,
-                    "fitness": perfs,
-                }
-            )
-            .groupby("model")
-            .agg(
-                mean_score=("score", np.mean),
-                median_score=("score", np.median),
-                max_score=("score", np.max),
-                std_score=("score", np.std),
-                mean_dur=("duration", np.mean),
-                median_dur=("duration", np.median),
-                max_dur=("duration", np.max),
-                std_dur=("duration", np.std),
-                mean_perf=("fitness", np.mean),
-                median_perf=("fitness", np.median),
-                max_perf=("fitness", np.max),
-                std_perf=("fitness", np.std),
-            )
-        )
-
-        return df
-
-    def get_best_player(self):
-        leader_board = self.get_leader_board()
-        best_ind = leader_board["model"].iloc[0]
-        return self.players[best_ind]
+        self.summary = new_summary
 
     def advance_next_gen(self):
         """
@@ -204,14 +151,13 @@ class Generation(InitConfig):
             self._print("Saving generation.")
             self.save_latest_gen()
 
-    def save_latest_gen(self, test=False):
+    def save_latest_gen(self):
         if self.players is None or self.summary is None:
             raise RuntimeError(
                 "Need to breed or spawn players and evaluate" "before saving."
             )
 
-        save_dir = "test" if test else "gen%04d" % self.gen_number
-
+        save_dir = "gen%04d" % self.gen_number
         for i, P in enumerate(self.players):
             self._print("Saving player %d..." % i)
 
@@ -221,22 +167,20 @@ class Generation(InitConfig):
             P.save_weights("data/%s/player%04d.h5" % (save_dir, i))
 
         self._print("Saving summary.")
-        df_name = "summary_test.csv" if test else "summary.csv"
-        self.summary.to_csv("data/" + df_name, index=False)
+        self.summary.to_csv("data/" + save_dir + "/summary.csv", index=False)
 
         self._print("Done.")
 
-    def load_gen(self, gen_number, test=False):
+    def load_gen(self, gen_number):
         self._print("Loading generation %d." % gen_number)
 
         self._print("Loading summary.")
-        df_name = "summary_test.csv" if test else "summary.csv"
-        df = pd.read_csv("data/" + df_name, dtype={"seed": int})
-        df = df[df["generation"] <= gen_number]
+        self.summary = pd.read_csv(
+            f"data/gen{gen_number:04.0f}/summary.csv", dtype={"seed": int}
+        )
 
-        load_dir = "test" if test else "gen%04d" % gen_number
+        load_dir = "gen%04d" % gen_number
 
-        self.summary = df
         self.gen_number = gen_number
 
         players = []
@@ -248,9 +192,12 @@ class Generation(InitConfig):
 
         self.players = np.array(players)
 
-    def load_latest_gen(self, test=False):
-        df_name = "summary_test.csv" if test else "summary.csv"
-        df = pd.read_csv("data/" + df_name)
-        gen_number = df["generation"].max()
-
-        self.load_gen(gen_number, test)
+    def load_latest_gen(self):
+        gens = [int(s[3:]) for s in os.listdir("data") if s.startswith("gen")]
+        if len(gens) == 0:
+            self.spawn_random()
+            self.eval_players()
+            self.save_latest_gen()
+        else:
+            gen_number = max(gens)
+            self.load_gen(gen_number)

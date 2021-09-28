@@ -19,9 +19,9 @@ class Player(InitConfig):
         super().__init__()
 
         # Architecture parameters set in InitConfig
-        layers = [Dense(24, input_shape=(24,))]
+        layers = [Dense(24, input_shape=(24,), activation="relu")]
         for _ in range(self.num_hidden_layers):
-            layers.append(Dense(self.hidden_layer_size))
+            layers.append(Dense(self.hidden_layer_size, activation="relu"))
         layers.append(Dense(4, activation="softmax"))
 
         self.model = Sequential(layers)

@@ -11,7 +11,7 @@ class InitConfig:
 
         # Related to generations and breeding
         # Total population per generation
-        self.generation_size = 1000
+        self.generation_size = 500
         # Number of top players to brred next generation
         self.number_to_breed = 10
         # Standard deviation of Gaussian noise added during breeding algorithm
@@ -30,7 +30,7 @@ class InitConfig:
 
         # The neural network will have an input layer of size 24, output layer
         # of size 4, and num_hidden_layers input layers of size hidden_layer_size
-        self.num_hidden_layers = 2
+        self.num_hidden_layers = 3
         self.hidden_layer_size = 18
 
     def fitness_function(self, score, duration):
