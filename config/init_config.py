@@ -11,11 +11,11 @@ class InitConfig:
 
         # Related to generations and breeding
         # Total population per generation
-        self.generation_size = 500
+        self.generation_size = 2000
         # Number of top players to brred next generation
         self.number_to_breed = 10
         # Standard deviation of Gaussian noise added during breeding algorithm
-        self.mutation_rate = 0.1
+        self.mutation_rate = 0.3
 
         # Related to halting the game:
         # This many frames with no score = kill
@@ -23,7 +23,7 @@ class InitConfig:
         # Each new score allows this many more frames
         self.extra_time_per_score = 100
         # Overall max frames
-        self.max_time_allowed = 3000
+        self.max_time_allowed = 1000
 
         # How big should the game be?
         self.board_size = 30

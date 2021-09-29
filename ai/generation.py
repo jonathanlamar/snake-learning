@@ -10,8 +10,9 @@ from game.game_state import GameState
 import pandas as pd
 
 
-def _eval_iter(triple):
-    i, seed, weights = triple
+def _eval_iter(tup):
+    i, weights = tup
+    seed = randint(1000, 9999)
     print(f"Evaluating player {i} on game {seed}.")
 
     G = GameState(seed=seed)
@@ -78,21 +79,19 @@ class Generation(InitConfig):
         self.players = players
 
     def get_leader_board(self):
-        """ Returns: DataFrame of key metrics for top performers (breeders) only """
+        """Returns: DataFrame of key metrics for top performers (breeders) only"""
 
         if self.summary is None:
             raise RuntimeError("Current gen has not been evaluated.")
 
         return (
-            self.summary.groupby("model")
-            .agg({"fitness": "mean"})
-            .sort_values("fitness", ascending=False)
+            self.summary.sort_values("fitness", ascending=False)
             .head(self.number_to_breed)
             .reset_index()
         )
 
     def eval_players(self):
-        """ Have each player play the game and record performance """
+        """Have each player play the game and record performance"""
         new_summary = pd.DataFrame(
             columns=["model", "seed", "score", "duration", "fitness"]
         )
@@ -101,11 +100,7 @@ class Generation(InitConfig):
         with mp.get_context("spawn").Pool(mp.cpu_count()) as pool:
             results = pool.map(
                 _eval_iter,
-                [
-                    (i, seed, P.model.get_weights())
-                    for (i, P) in enumerate(self.players)
-                    for seed in randint(1000, 9999, size=10)
-                ],
+                [(i, P.model.get_weights()) for (i, P) in enumerate(self.players)],
             )
 
         for j, (i, seed, G) in enumerate(results):
