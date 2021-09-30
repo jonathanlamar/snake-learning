@@ -1,7 +1,8 @@
+import numpy as np
+
+from ai.generation import Generation
 from ai.player import Player
 from game.game_state import GameState
-from ai.generation import Generation
-import numpy as np
 
 if __name__ == "__main__":
     gen = Generation()

@@ -1,6 +1,9 @@
+from __future__ import annotations
 import multiprocessing as mp
 import os
+from typing import Optional
 
+import numpy as np
 from numpy.random import choice, randint
 import pandas as pd
 
@@ -9,7 +12,7 @@ from config.init_config import InitConfig
 from game.game_state import GameState
 
 
-def _eval_iter(triple):
+def _eval_iter(triple: tuple[int, int, np.ndarray]) -> tuple[int, int, GameState]:
     i, seed, weights = triple
     print(f"Evaluating player {i} on game {seed}.")
 
@@ -28,7 +31,9 @@ class Generation(InitConfig):
     generation.
     """
 
-    def __init__(self, gen_number=1, generation_size=None):
+    def __init__(
+        self, gen_number: int = 1, generation_size: Optional[int] = None
+    ) -> None:
         super().__init__()
 
         # Dataframe with summary statistics on fitness.
@@ -43,7 +48,7 @@ class Generation(InitConfig):
         if generation_size is not None:
             self.generation_size = generation_size
 
-    def breed(self, breeders=None):
+    def breed(self, breeders: Optional[list[Player]] = None) -> list[Player]:
         """
         Either breed generation from list of breeders or start fresh
         Returns: array of Player instances bred from breeders
@@ -67,16 +72,16 @@ class Generation(InitConfig):
 
         return new_gen
 
-    def _print(self, msg):
+    def _print(self, msg: str) -> None:
         os.system("clear")
         print(msg)
 
-    def spawn_random(self):
+    def spawn_random(self) -> None:
         """Cold start: Spawn the first generation of players."""
         players = self.breed()
         self.players = players
 
-    def get_leader_board(self):
+    def get_leader_board(self) -> pd.DataFrame:
         """Returns: DataFrame of key metrics for top performers (breeders) only"""
 
         if self.summary is None:
@@ -94,7 +99,7 @@ class Generation(InitConfig):
             .reset_index()
         )
 
-    def eval_players(self):
+    def eval_players(self) -> None:
         """Have each player play the game and record performance"""
         new_summary = pd.DataFrame(
             columns=["model", "seed", "score", "duration", "fitness"]
@@ -122,7 +127,7 @@ class Generation(InitConfig):
 
         self.summary = new_summary
 
-    def advance_next_gen(self):
+    def advance_next_gen(self) -> None:
         """
         Updates self in place to form new generation.
         Returns: self
@@ -135,7 +140,7 @@ class Generation(InitConfig):
         # Metadata
         self.gen_number += 1
 
-    def train_iter(self, num_loops=1):
+    def train_iter(self, num_loops: int = 1) -> None:
         """
         Iterate over the standard breed-eval-save loop
         Requires at least one generation to be saved already.
@@ -154,7 +159,7 @@ class Generation(InitConfig):
             self._print("Saving generation.")
             self.save_latest_gen()
 
-    def save_latest_gen(self):
+    def save_latest_gen(self) -> None:
         if self.players is None or self.summary is None:
             raise RuntimeError(
                 "Need to breed or spawn players and evaluate" "before saving."
@@ -174,7 +179,7 @@ class Generation(InitConfig):
 
         self._print("Done.")
 
-    def load_gen(self, gen_number):
+    def load_gen(self, gen_number: int) -> None:
         self._print(f"Loading generation {gen_number}.")
         self.gen_number = gen_number
         self.summary = pd.read_csv(
@@ -195,7 +200,7 @@ class Generation(InitConfig):
 
         self.players = players
 
-    def load_latest_gen(self):
+    def load_latest_gen(self) -> None:
         gens = [int(s[3:]) for s in os.listdir("data") if s.startswith("gen")]
         if len(gens) == 0:
             self.spawn_random()

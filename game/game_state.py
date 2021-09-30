@@ -4,6 +4,7 @@ import numpy as np
 
 from config.init_config import InitConfig
 
+
 class GameState(InitConfig):
     """
     This class is responsible for holding the state of the game at any given
@@ -12,18 +13,19 @@ class GameState(InitConfig):
     and a method for getting line of sight from the head of the snake to a wall
     in any of 8 directions.
     """
-    def __init__(self, seed=None):
+
+    def __init__(self, seed: int = None) -> None:
         super().__init__()
 
         # Set seed from RNG
         np.random.seed(seed)
 
         self.prize_loc = np.random.randint(0, self.board_size, 2)
-        self.head_loc  = np.array([self.board_size // 2, self.board_size // 2])
-        self.direction = np.array([0, 0]) # Represents the ordered pair (dy/dt, dx/dt)
-        self.score     = 0
-        self.duration  = 0 # Keep track of how long the game has lasted
-        self.dead      = False
+        self.head_loc = np.array([self.board_size // 2, self.board_size // 2])
+        self.direction = np.array([0, 0])  # Represents the ordered pair (dy/dt, dx/dt)
+        self.score = 0
+        self.duration = 0  # Keep track of how long the game has lasted
+        self.dead = False
 
         # The board will be drawn from this array. Positive values
         # are the snake's body, and negative values are the prizes.
@@ -37,10 +39,9 @@ class GameState(InitConfig):
         self.board[self.head_loc[0], self.head_loc[1]] = 1
         self.board[self.prize_loc[0], self.prize_loc[1]] = -1
 
-
-    def update(self, new_direction):
-        """ Direction update (only if valid, i.e., no reversing direction) """
-        if not all(new_direction == -1*(self.direction)):
+    def update(self, new_direction: np.ndarray) -> None:
+        """Direction update (only if valid, i.e., no reversing direction)"""
+        if not all(new_direction == -1 * (self.direction)):
             self.direction = new_direction
 
         # Putative next location
@@ -48,7 +49,12 @@ class GameState(InitConfig):
         nextR, nextC = next_loc
 
         # Wall detection
-        if nextC < 0 or nextC >= self.board_size or nextR < 0 or nextR >= self.board_size:
+        if (
+            nextC < 0
+            or nextC >= self.board_size
+            or nextR < 0
+            or nextR >= self.board_size
+        ):
             self.dead = True
             return
 
@@ -71,17 +77,17 @@ class GameState(InitConfig):
         # Add new head cell
         self.board[self.head_loc[0], self.head_loc[1]] = 1
         # Delete tail cell
-        self.board[self.board > self.score+10] = 0
+        self.board[self.board > self.score + 10] = 0
         # Add prize cell
         self.board[self.prize_loc[0], self.prize_loc[1]] = -1
 
-    def _get_new_prize_loc(self):
+    def _get_new_prize_loc(self) -> np.ndarray:
         X, Y = np.where(self.board == 0)
         i = np.random.choice(range(len(X)))
         return np.array([X[i], Y[i]])
 
-    def draw(self):
-        os.system('clear')
+    def draw(self) -> None:
+        os.system("clear")
         num_rows = self.board.shape[0]
         num_cols = self.board.shape[1]
 
@@ -89,33 +95,37 @@ class GameState(InitConfig):
         # at coordinates.  Unfortunately those coordinates are indexed from
         # one, so this code is pretty ugly.
         # Place a horizonal top border
-        print('\033[1;1H+' + '-'*num_cols + '+')
-        for i in range(2, num_rows+2):
+        print("\033[1;1H+" + "-" * num_cols + "+")
+        for i in range(2, num_rows + 2):
             # Place part of the left border
-            print('\033[{0};1H|'.format(i))
-            for j in range(2, num_cols+2):
+            print("\033[{0};1H|".format(i))
+            for j in range(2, num_cols + 2):
                 # Print X for snake body, O for prize.
-                if self.board[i-2, j-2] > 0:
-                    print('\033[{0};{1}H{2}'.format(i, j, 'X'))
-                elif self.board[i-2, j-2] < 0:
-                    print('\033[{0};{1}H{2}'.format(i, j, 'O'))
+                if self.board[i - 2, j - 2] > 0:
+                    print("\033[{0};{1}H{2}".format(i, j, "X"))
+                elif self.board[i - 2, j - 2] < 0:
+                    print("\033[{0};{1}H{2}".format(i, j, "O"))
             # Print part of the right border
-            print('\033[{0};{1}H|'.format(i, num_cols+2))
+            print("\033[{0};{1}H|".format(i, num_cols + 2))
         # Print bottom border
-        print('\033[{0};0H+'.format(num_rows+2) + '-'*num_cols+ '+')
+        print("\033[{0};0H+".format(num_rows + 2) + "-" * num_cols + "+")
         # Print other self info
-        print('\033[{0};1HScore: {1}, Head: ({2},{3}), Prize: ({4},{5})'
-              .format(num_rows+3, self.score,
-                      self.head_loc[0], self.head_loc[1],
-                      self.prize_loc[0], self.prize_loc[1]))
-
-
+        print(
+            "\033[{0};1HScore: {1}, Head: ({2},{3}), Prize: ({4},{5})".format(
+                num_rows + 3,
+                self.score,
+                self.head_loc[0],
+                self.head_loc[1],
+                self.prize_loc[0],
+                self.prize_loc[1],
+            )
+        )
 
     ###########################################################################
     # Methods for providing information to the player (maybe should be methods
     # of Player class.)
     ###########################################################################
-    def get_line_of_sight(self, dy, dx):
+    def get_line_of_sight(self, dy: int, dx: int) -> np.ndarray:
         """
         Expects: direction written as a pair dy, dx
         Returns: Ray starting one from head_loc extending in that direction to
@@ -127,13 +137,21 @@ class GameState(InitConfig):
         if dy == 0:
             rs = [r]
         else:
-            rs = [r + i*dy for i in range(1, self.board_size) if
-                  r+i*dy in range(self.board_size) and c+i*dx in range(self.board_size)]
+            rs = [
+                r + i * dy
+                for i in range(1, self.board_size)
+                if r + i * dy in range(self.board_size)
+                and c + i * dx in range(self.board_size)
+            ]
 
         if dx == 0:
             cs = [c]
         else:
-            cs = [c + i*dx for i in range(1, self.board_size) if
-                  r+i*dy in range(self.board_size) and c+i*dx in range(self.board_size)]
+            cs = [
+                c + i * dx
+                for i in range(1, self.board_size)
+                if r + i * dy in range(self.board_size)
+                and c + i * dx in range(self.board_size)
+            ]
 
         return self.board[rs, cs]

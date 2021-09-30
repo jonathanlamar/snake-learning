@@ -7,7 +7,7 @@ class InitConfig:
     location.  I'm doing this instead of a run script with global variables.
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
 
         # Related to generations and breeding
         # Total population per generation
@@ -35,7 +35,7 @@ class InitConfig:
         self.num_hidden_layers = 3
         self.hidden_layer_size = 18
 
-    def fitness_function(self, score, duration):
+    def fitness_function(self, score: int, duration: int) -> float:
         # This is the fitness function for the selection algorithm.
         # Generation instances will use this function to decide fitness.
 
