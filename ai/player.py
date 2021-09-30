@@ -2,10 +2,10 @@ from time import sleep
 
 import numpy as np
 from numpy.random import normal, randint
-
-from config.init_config import InitConfig
 from tensorflow.keras import Sequential
 from tensorflow.keras.layers import Dense
+
+from config.init_config import InitConfig
 
 
 class Player(InitConfig):

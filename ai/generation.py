@@ -1,18 +1,16 @@
 import multiprocessing as mp
 import os
 
-import numpy as np
 from numpy.random import choice, randint
+import pandas as pd
 
 from ai.player import Player
 from config.init_config import InitConfig
 from game.game_state import GameState
-import pandas as pd
 
 
-def _eval_iter(tup):
-    i, weights = tup
-    seed = randint(1000, 9999)
+def _eval_iter(triple):
+    i, seed, weights = triple
     print(f"Evaluating player {i} on game {seed}.")
 
     G = GameState(seed=seed)
@@ -30,7 +28,7 @@ class Generation(InitConfig):
     generation.
     """
 
-    def __init__(self, breeders=None, gen_number=1, generation_size=None):
+    def __init__(self, gen_number=1, generation_size=None):
         super().__init__()
 
         # Dataframe with summary statistics on fitness.
@@ -67,7 +65,7 @@ class Generation(InitConfig):
                 self._print("Creating player %d from scratch." % i)
                 new_gen.append(Player())
 
-        return np.array(new_gen)
+        return new_gen
 
     def _print(self, msg):
         os.system("clear")
@@ -85,7 +83,13 @@ class Generation(InitConfig):
             raise RuntimeError("Current gen has not been evaluated.")
 
         return (
-            self.summary.sort_values("fitness", ascending=False)
+            self.summary.groupby("model")
+            .agg(
+                avg_fitness=("fitness", "mean"),
+                avg_duration=("duration", "mean"),
+                max_score=("score", "max"),
+            )
+            .sort_values("avg_fitness", ascending=False)
             .head(self.number_to_breed)
             .reset_index()
         )
@@ -100,7 +104,11 @@ class Generation(InitConfig):
         with mp.get_context("spawn").Pool(mp.cpu_count()) as pool:
             results = pool.map(
                 _eval_iter,
-                [(i, P.model.get_weights()) for (i, P) in enumerate(self.players)],
+                [
+                    (i, seed, P.model.get_weights())
+                    for (i, P) in enumerate(self.players)
+                    for seed in randint(1000, 9999, size=self.num_games_to_play)
+                ],
             )
 
         for j, (i, seed, G) in enumerate(results):
@@ -120,7 +128,7 @@ class Generation(InitConfig):
         Returns: self
         """
         leader_board = self.get_leader_board()
-        breeders = self.players[[int(i) for i in leader_board["model"]]]
+        breeders = [self.players[int(i)] for i in leader_board["model"]]
         players = self.breed(breeders)
         self.players = players
 
@@ -167,25 +175,25 @@ class Generation(InitConfig):
         self._print("Done.")
 
     def load_gen(self, gen_number):
-        self._print("Loading generation %d." % gen_number)
-
-        self._print("Loading summary.")
+        self._print(f"Loading generation {gen_number}.")
+        self.gen_number = gen_number
         self.summary = pd.read_csv(
             f"data/gen{gen_number:04.0f}/summary.csv", dtype={"seed": int}
         )
 
-        load_dir = "gen%04d" % gen_number
-
-        self.gen_number = gen_number
-
         players = []
-        for i in range(self.generation_size):
-            self._print("Loading model %d..." % i)
+        files = [
+            f
+            for f in os.listdir(f"./data/gen{gen_number:04.0f}")
+            if f.startswith("player")
+        ]
+        for fname in sorted(files):
+            self._print(f"Loading model {fname[6:-3]}.")
             P = Player()
-            P.load_weights("data/%s/player%04d.h5" % (load_dir, i))
+            P.load_weights(f"data/gen{gen_number:04.0f}/{fname}")
             players.append(P)
 
-        self.players = np.array(players)
+        self.players = players
 
     def load_latest_gen(self):
         gens = [int(s[3:]) for s in os.listdir("data") if s.startswith("gen")]
